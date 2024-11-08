@@ -1,0 +1,57 @@
+import { validateEnvironment } from 'src/common/utils';
+
+type AppConfig = {
+  app: {
+    environment: 'development' | 'production' | 'test';
+    port: number;
+  };
+  hashing: {
+    bcrypt: {
+      rounds: number;
+    };
+  };
+  jwt: {
+    secret: string;
+    accessTokenTtl: string;
+  };
+  database: {
+    host: string;
+    port: number;
+    name: string;
+    user: string;
+    password: string;
+  };
+  mail: {
+    host: string;
+    port: number;
+    from: string;
+  };
+};
+
+export default (): AppConfig => ({
+  app: {
+    environment: validateEnvironment(process.env.ENVIRONMENT || 'development'),
+    port: parseInt(process.env.PORT || '9999', 10),
+  },
+  hashing: {
+    bcrypt: {
+      rounds: parseInt(process.env.BCRYPT_ROUNDS || '10', 10),
+    },
+  },
+  jwt: {
+    secret: process.env.JWT_SECRET,
+    accessTokenTtl: process.env.JWT_ACCESS_TOKEN_TTL,
+  },
+  database: {
+    host: process.env.DB_HOST || 'localhost',
+    port: parseInt(process.env.DB_PORT || '5432', 10),
+    name: process.env.DB_NAME,
+    user: process.env.DB_USER,
+    password: process.env.DB_PASSWORD,
+  },
+  mail: {
+    host: process.env.MAIL_HOST || 'localhost',
+    port: parseInt(process.env.MAIL_PORT || '1025', 10),
+    from: process.env.MAIL_FROM || '"Admin" <test@admin.com>',
+  },
+});
