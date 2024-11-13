@@ -5,6 +5,8 @@ import { SignUpRequestDto } from './dtos/requests/sign-up.request.dto';
 import { SignInRequestDto } from './dtos/requests/sign-in.request.dto';
 import { SignUpResponseDto } from './dtos/responses/sign-up.response.dto';
 import { SignInResponseDto } from './dtos/responses/sign-in.response.dto';
+import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
+import { VerifyEmailResponseDto } from './dtos/responses/verify-email.response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -22,5 +24,14 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   signIn(@Body() body: SignInRequestDto): Promise<SignInResponseDto> {
     return this.authService.signIn(body);
+  }
+
+  @Public()
+  @Post('verify-email')
+  @HttpCode(HttpStatus.OK)
+  verifyEmail(
+    @Body() body: VerifyEmailRequestDto,
+  ): Promise<VerifyEmailResponseDto> {
+    return this.authService.verifyEmail(body);
   }
 }

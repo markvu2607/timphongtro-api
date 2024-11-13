@@ -1,5 +1,6 @@
 import { MailerService } from '@nestjs-modules/mailer';
 import {
+  BadRequestException,
   ConflictException,
   Injectable,
   NotFoundException,
@@ -8,8 +9,9 @@ import {
 import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
-import { PgErrorCode } from 'src/common/constants/pg-error-code.constant';
+import ms from 'ms';
 import { Repository } from 'typeorm';
+import { PgErrorCode } from 'src/common/constants/pg-error-code.constant';
 import { User } from '../users/entities/user.entity';
 import { SignInRequestDto } from './dtos/requests/sign-in.request.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up.request.dto';
@@ -20,6 +22,9 @@ import { Account } from './entities/account.entity';
 import { Role } from './entities/role.entity';
 import { ERole } from './enums/role.enum';
 import { HashingService } from './hashing/hashing.service';
+import { generateVerificationLink } from '../../common/utils';
+import { VerifyEmailResponseDto } from './dtos/responses/verify-email.response.dto';
+import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
 
 @Injectable()
 export class AuthService {
@@ -46,17 +51,26 @@ export class AuthService {
       if (!role) {
         throw new NotFoundException('Default user role not found.');
       }
+
       const account = this.accountsRepository.create({
         email: signUpRequestDto.email,
         password: hashedPassword,
         role,
       });
+      const verificationToken = await this.hashingService.hash(
+        signUpRequestDto.email,
+      );
       const user = this.usersRepository.create({
         firstName: signUpRequestDto.firstName,
         lastName: signUpRequestDto.lastName,
         phone: signUpRequestDto.phone,
         bio: signUpRequestDto.bio,
         isVerified: false,
+        verificationToken,
+        tokenExpiration: new Date(
+          Date.now() +
+            ms(this.configService.get<string>('app.verificationTokenTTL')),
+        ),
         account,
       });
 
@@ -64,8 +78,7 @@ export class AuthService {
         async (manager) => {
           await manager.save(user);
           account.user = user;
-          const savedAccount = await manager.save(account);
-          return savedAccount;
+          return await manager.save(account);
         },
       );
 
@@ -79,8 +92,10 @@ export class AuthService {
         subject: 'Verify Email',
         template: 'verify-email',
         context: {
-          webUrl: 'http://localhost:3000/verify-email',
-          token: '123456',
+          verification_link: generateVerificationLink(
+            this.configService.get<string>('web.url'),
+            verificationToken,
+          ),
         },
       });
 
@@ -124,6 +139,26 @@ export class AuthService {
       user: new UserWithEmailResponseDto(account),
       accessToken: accessToken,
     });
+  }
+
+  async verifyEmail({ token }: VerifyEmailRequestDto) {
+    const user = await this.usersRepository.findOneBy({
+      verificationToken: token,
+    });
+
+    if (!user) {
+      throw new BadRequestException('Token invalid.');
+    }
+
+    const updatedUser = this.usersRepository.merge(user, {
+      isVerified: true,
+      verificationToken: null,
+      tokenExpiration: null,
+    });
+
+    await this.usersRepository.save(updatedUser);
+
+    return new VerifyEmailResponseDto();
   }
 
   async generateJwtToken(
