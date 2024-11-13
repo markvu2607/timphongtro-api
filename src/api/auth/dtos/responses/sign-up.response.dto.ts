@@ -1,4 +1,4 @@
-import { UserWithEmailResponseDto } from './user-with-email.response.dto';
+import { UserWithEmailResponseDto } from '../../../users/dtos/responses/user-with-email.response.dto';
 
 export class SignUpResponseDto {
   public user: UserWithEmailResponseDto;

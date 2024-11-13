@@ -1,4 +1,4 @@
-import { Account } from '../../entities/account.entity';
+import { Account } from '../../../auth/entities/account.entity';
 
 export class UserWithEmailResponseDto {
   public email: string;

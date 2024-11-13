@@ -17,7 +17,7 @@ import { SignInRequestDto } from './dtos/requests/sign-in.request.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up.request.dto';
 import { SignInResponseDto } from './dtos/responses/sign-in.response.dto';
 import { SignUpResponseDto } from './dtos/responses/sign-up.response.dto';
-import { UserWithEmailResponseDto } from './dtos/responses/user-with-email.response.dto';
+import { UserWithEmailResponseDto } from '../users/dtos/responses/user-with-email.response.dto';
 import { Account } from './entities/account.entity';
 import { Role } from './entities/role.entity';
 import { ERole } from './enums/role.enum';
