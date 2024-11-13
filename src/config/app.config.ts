@@ -1,9 +1,14 @@
 import { validateEnvironment } from 'src/common/utils';
+import * as process from 'node:process';
 
 type AppConfig = {
   app: {
     environment: 'development' | 'production' | 'test';
     port: number;
+    verificationTokenTTL: string;
+  };
+  web: {
+    url: string;
   };
   hashing: {
     bcrypt: {
@@ -32,6 +37,10 @@ export default (): AppConfig => ({
   app: {
     environment: validateEnvironment(process.env.ENVIRONMENT || 'development'),
     port: parseInt(process.env.PORT || '9999', 10),
+    verificationTokenTTL: process.env.VERIFICATION_TOKEN_TTL,
+  },
+  web: {
+    url: process.env.WEB_URL || 'http://localhost:3000',
   },
   hashing: {
     bcrypt: {
