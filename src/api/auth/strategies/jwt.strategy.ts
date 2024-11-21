@@ -14,7 +14,6 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: any) {
-    // TODO: validate jwt
     // TODO: should separate config for access token vs refresh token
     return payload;
   }
