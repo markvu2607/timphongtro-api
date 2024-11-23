@@ -1,0 +1,31 @@
+services:
+  app:
+    image: markvu2607/timphongtro-api
+    env_file:
+      - .env
+    ports:
+      - "9999:9999"
+  db:
+    image: postgres
+    restart: always
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=root
+      - POSTGRES_PASSWORD=12345678
+      - POSTGRES_DB=timphongtro_db
+    volumes:
+      - pg_data:/var/lib/postgresql/data
+  mailhog:
+    image: mailhog/mailhog
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+
+volumes:
+  pg_data:
+    driver: local
+
+networks:
+  app_networks:
+    external: true
