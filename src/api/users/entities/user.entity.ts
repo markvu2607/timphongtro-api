@@ -1,19 +1,28 @@
-import { Account } from 'src/api/auth/entities/account.entity';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  OneToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsOptional } from 'class-validator';
+import { IsEmail, IsOptional } from 'class-validator';
+import { ERole } from '../../auth/enums/role.enum';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn()
   id: number;
+
+  @IsEmail()
+  @Column({ unique: true, length: 255 })
+  email: string;
+
+  @Column({ length: 255 })
+  password: string;
+
+  @Column({ type: 'enum', enum: ERole, default: ERole.USER })
+  role: ERole;
 
   @Column()
   firstName: string;
@@ -37,9 +46,6 @@ export class User {
   @Column({ default: null })
   @IsOptional()
   tokenExpiration: Date;
-
-  @OneToOne(() => Account, (account) => account.user)
-  account: Account;
 
   @CreateDateColumn()
   createdAt: Date;

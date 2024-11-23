@@ -1,14 +1,14 @@
-import { UserWithEmailResponseDto } from '../../../users/dtos/responses/user-with-email.response.dto';
+import { UserResponseDto } from '../../../users/dtos/responses/user.response.dto';
 
 export class SignInResponseDto {
-  public user: UserWithEmailResponseDto;
+  public user: UserResponseDto;
   public accessToken: string;
 
   constructor({
     user,
     accessToken,
   }: {
-    user: UserWithEmailResponseDto;
+    user: UserResponseDto;
     accessToken: string;
   }) {
     this.user = user;
