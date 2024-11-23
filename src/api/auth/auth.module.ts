@@ -6,8 +6,6 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { User } from '../users/entities/user.entity';
 import { AuthController } from './auth.controller';
 import { AuthService } from './auth.service';
-import { Account } from './entities/account.entity';
-import { Role } from './entities/role.entity';
 import { JwtAuthGuard } from './guards/jwt.guard';
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
@@ -15,7 +13,7 @@ import { JwtStrategy } from './strategies/jwt.strategy';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([Account, Role, User]),
+    TypeOrmModule.forFeature([User]),
     JwtModule.register({}),
     MailerModule,
   ],
