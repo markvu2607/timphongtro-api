@@ -11,7 +11,7 @@ import { ERole } from '../../auth/enums/role.enum';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn()
+  @PrimaryGeneratedColumn('uuid')
   id: number;
 
   @IsEmail()
