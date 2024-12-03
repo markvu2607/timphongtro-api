@@ -12,7 +12,7 @@ import { ERole } from '../../auth/enums/role.enum';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: number;
+  id: string;
 
   @IsEmail()
   @Column({ unique: true, length: 255 })
@@ -25,16 +25,13 @@ export class User {
   role: ERole;
 
   @Column()
-  firstName: string;
-
-  @Column()
-  lastName: string;
+  name: string;
 
   @Column()
   phone: string;
 
-  @Column()
-  bio: string;
+  @Column({ nullable: true, default: null })
+  avatar: string;
 
   @Column()
   isVerified: boolean;

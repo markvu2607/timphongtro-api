@@ -2,7 +2,6 @@ import { Transform } from 'class-transformer';
 import {
   IsEmail,
   IsNotEmpty,
-  IsOptional,
   IsPhoneNumber,
   IsString,
   Matches,
@@ -29,16 +28,8 @@ export class SignUpRequestDto {
   password: string;
 
   @IsString()
-  firstName: string;
-
-  @IsString()
-  lastName: string;
+  name: string;
 
   @IsPhoneNumber('VN')
   phone: string;
-
-  @IsString()
-  @IsOptional()
-  @MaxLength(255)
-  bio: string;
 }
