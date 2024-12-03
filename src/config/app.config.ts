@@ -31,6 +31,14 @@ type AppConfig = {
     port: number;
     from: string;
   };
+  aws: {
+    region: string;
+    accessKeyId: string;
+    secretAccessKey: string;
+    s3: {
+      bucketName: string;
+    };
+  };
 };
 
 export default (): AppConfig => ({
@@ -62,5 +70,13 @@ export default (): AppConfig => ({
     host: process.env.MAIL_HOST || 'localhost',
     port: parseInt(process.env.MAIL_PORT || '1025', 10),
     from: process.env.MAIL_FROM || '"Admin" <test@admin.com>',
+  },
+  aws: {
+    region: process.env.AWS_REGION,
+    accessKeyId: process.env.AWS_ACCESS_KEY_ID,
+    secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
+    s3: {
+      bucketName: process.env.AWS_S3_BUCKET_NAME,
+    },
   },
 });

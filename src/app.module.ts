@@ -5,6 +5,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { join } from 'path';
 import { ApiModule } from 'src/api/api.module';
+import { S3Module } from 'src/lib/s3/s3.module';
 import appConfig from 'src/config/app.config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -50,6 +51,7 @@ import { AppService } from './app.service';
         },
       }),
     }),
+    S3Module,
     ApiModule,
   ],
   controllers: [AppController],

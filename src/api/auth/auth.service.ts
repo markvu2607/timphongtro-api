@@ -47,10 +47,8 @@ export class AuthService {
       const user = this.usersRepository.create({
         email: signUpRequestDto.email,
         password: hashedPassword,
-        firstName: signUpRequestDto.firstName,
-        lastName: signUpRequestDto.lastName,
+        name: signUpRequestDto.name,
         phone: signUpRequestDto.phone,
-        bio: signUpRequestDto.bio,
         isVerified: false,
         verificationToken,
         tokenExpiration: new Date(

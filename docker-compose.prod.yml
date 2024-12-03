@@ -16,11 +16,10 @@ services:
       - POSTGRES_DB=timphongtro_db
     volumes:
       - pg_data:/var/lib/postgresql/data
-  mailhog:
+  mailhog: # TODO: remove at production
     image: mailhog/mailhog
     ports:
       - "8025:8025"
-      - "1025:1025"
 
 volumes:
   pg_data:
