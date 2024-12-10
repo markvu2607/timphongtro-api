@@ -1,5 +1,4 @@
 import { Exclude } from 'class-transformer';
-import { Province } from 'src/api/provinces/entities/province.entity';
 import {
   Column,
   CreateDateColumn,
@@ -10,6 +9,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Province } from '.';
 
 @Entity('news')
 export class News {

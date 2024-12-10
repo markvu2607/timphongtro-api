@@ -1,6 +1,4 @@
 import { Exclude } from 'class-transformer';
-import { Post } from 'src/api/posts/entities/post.entity';
-import { Province } from 'src/api/provinces/entities/province.entity';
 import {
   Column,
   CreateDateColumn,
@@ -8,25 +6,22 @@ import {
   Entity,
   JoinColumn,
   ManyToOne,
-  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { Post } from '.';
 
-@Entity('districts')
-export class District {
+@Entity('post_images')
+export class PostImage {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ length: 255 })
-  name: string;
+  url: string;
 
-  @ManyToOne(() => Province, (province) => province.id)
-  @JoinColumn({ name: 'province_id' })
-  province: Province;
-
-  @OneToMany(() => Post, (post) => post.district)
-  posts: Post[];
+  @ManyToOne(() => Post, (post) => post.id)
+  @JoinColumn({ name: 'post_id' })
+  post: Post;
 
   @CreateDateColumn()
   @Exclude()

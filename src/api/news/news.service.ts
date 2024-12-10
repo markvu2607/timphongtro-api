@@ -4,12 +4,11 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
-import { News } from './entities/news.entity';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
-import { CreateNewsRequestDto } from './dtos/requests/create-news.request.dto';
-import { Province } from '../provinces/entities/province.entity';
 import { S3Service } from 'src/lib/s3/s3.service';
+import { News, Province } from 'src/repositories/entities';
+import { Repository } from 'typeorm';
+import { CreateNewsRequestDto } from './dtos/requests/create-news.request.dto';
 
 @Injectable()
 export class NewsService {

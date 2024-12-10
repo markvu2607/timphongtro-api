@@ -1,7 +1,6 @@
 import { PostResponseDto } from 'src/api/posts/dtos/responses/post.response.dto';
-import { Report } from '../../entities/report.entity';
-import { EReportStatus } from '../../enums/report-status.enum';
-
+import { EReportStatus } from 'src/common/enums/report-status.enum';
+import { Report } from 'src/repositories/entities';
 export class ReportResponseDto {
   public id: string;
   public reason: string;

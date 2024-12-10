@@ -10,14 +10,14 @@ import {
   Put,
   Query,
 } from '@nestjs/common';
-import { Report } from './entities/report.entity';
-import { ReportService } from './report.service';
-import { Public } from '../auth/decorators/public.decorator';
-import { ERole } from '../auth/enums/role.enum';
-import { Roles } from '../auth/decorators/roles.decorator';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
-import { PaginatedReportsResponseDto } from './dtos/responses/get-reports.response.dto';
+import { ERole } from 'src/common/enums/role.enum';
+import { Report } from 'src/repositories/entities';
+import { Public } from '../auth/decorators/public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateReportRequestDto } from './dtos/requests/create-report.request.dto';
+import { PaginatedReportsResponseDto } from './dtos/responses/get-reports.response.dto';
+import { ReportService } from './report.service';
 
 @Controller('reports')
 export class ReportController {

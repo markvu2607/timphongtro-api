@@ -3,16 +3,18 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Post } from './entities/post.entity';
-import { CreatePostRequestDto } from './dtos/requests/create-post.request.dto';
-import { PostImage } from './entities/post-images.entity';
-import { S3Service } from 'src/lib/s3/s3.service';
-import { UsersService } from '../users/users.service';
-import { DistrictsService } from '../districts/districts.service';
-import { ProvincesService } from '../provinces/provinces.service';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { S3Service } from 'src/lib/s3/s3.service';
+import {
+  District,
+  Post,
+  PostImage,
+  Province,
+  User,
+} from 'src/repositories/entities';
+import { IsNull, Repository } from 'typeorm';
+import { CreatePostRequestDto } from './dtos/requests/create-post.request.dto';
 
 @Injectable()
 export class PostsService {
@@ -21,9 +23,12 @@ export class PostsService {
     private readonly postsRepository: Repository<Post>,
     @InjectRepository(PostImage)
     private readonly postImagesRepository: Repository<PostImage>,
-    private readonly usersService: UsersService,
-    private readonly districtsService: DistrictsService,
-    private readonly provincesService: ProvincesService,
+    @InjectRepository(User)
+    private readonly usersRepository: Repository<User>,
+    @InjectRepository(District)
+    private readonly districtsRepository: Repository<District>,
+    @InjectRepository(Province)
+    private readonly provincesRepository: Repository<Province>,
     private readonly s3Service: S3Service,
   ) {}
 
@@ -38,17 +43,23 @@ export class PostsService {
       throw new BadRequestException('No images provided');
     }
 
-    const user = await this.usersService.findOneById(userId);
+    const user = await this.usersRepository.findOne({
+      where: { id: userId, deletedAt: IsNull() },
+    });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    const district = await this.districtsService.findOneById(districtId);
+    const district = await this.districtsRepository.findOne({
+      where: { id: districtId, deletedAt: IsNull() },
+    });
     if (!district) {
       throw new NotFoundException('District not found');
     }
 
-    const province = await this.provincesService.findOneById(provinceId);
+    const province = await this.provincesRepository.findOne({
+      where: { id: provinceId, deletedAt: IsNull() },
+    });
     if (!province) {
       throw new NotFoundException('Province not found');
     }

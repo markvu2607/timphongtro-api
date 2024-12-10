@@ -1,4 +1,4 @@
-import { PostImage } from '../../entities/post-images.entity';
+import { PostImage } from 'src/repositories/entities';
 
 export class PostImageResponseDto {
   public id: string;

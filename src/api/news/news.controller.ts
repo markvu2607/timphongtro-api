@@ -16,11 +16,11 @@ import { FilesInterceptor } from '@nestjs/platform-express';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { ERole } from '../auth/enums/role.enum';
+import { ERole } from 'src/common/enums/role.enum';
 import { CreateNewsRequestDto } from './dtos/requests/create-news.request.dto';
 import { PaginatedNewsResponseDto } from './dtos/responses/get-list-news.response.dto';
 import { NewsResponseDto } from './dtos/responses/news.response.dto';
-import { News } from './entities/news.entity';
+import { News } from 'src/repositories/entities';
 import { NewsService } from './news.service';
 
 @Controller('news')

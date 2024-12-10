@@ -1,4 +1,4 @@
-import { Province } from '../../entities/province.entity';
+import { Province } from 'src/repositories/entities';
 
 export class ProvinceResponseDto {
   public id: string;

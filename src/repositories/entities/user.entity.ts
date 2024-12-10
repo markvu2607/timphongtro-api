@@ -1,3 +1,6 @@
+import { Exclude } from 'class-transformer';
+import { IsEmail, IsOptional } from 'class-validator';
+import { ERole } from 'src/common/enums/role.enum';
 import {
   Column,
   CreateDateColumn,
@@ -6,9 +9,6 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { IsEmail, IsOptional } from 'class-validator';
-import { ERole } from '../../auth/enums/role.enum';
-import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {

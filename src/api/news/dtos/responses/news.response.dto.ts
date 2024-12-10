@@ -1,5 +1,5 @@
 import { ProvinceResponseDto } from 'src/api/provinces/dtos/responses/province.response.dto';
-import { News } from '../../entities/news.entity';
+import { News } from 'src/repositories/entities';
 
 export class NewsResponseDto {
   public id: string;

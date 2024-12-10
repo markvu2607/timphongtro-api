@@ -1,5 +1,5 @@
 import { ProvinceResponseDto } from 'src/api/provinces/dtos/responses/province.response.dto';
-import { District } from '../../entities/district.entity';
+import { District } from 'src/repositories/entities';
 
 export class DistrictResponseDto {
   public id: string;

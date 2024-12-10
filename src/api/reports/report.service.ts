@@ -1,19 +1,23 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Like, Repository } from 'typeorm';
-import { Report } from './entities/report.entity';
-import { PaginatedReportsResponseDto } from './dtos/responses/get-reports.response.dto';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
-import { ReportResponseDto } from './dtos/responses/report.response.dto';
+import { Post, Report } from 'src/repositories/entities';
+import { IsNull, Like, Repository } from 'typeorm';
 import { CreateReportRequestDto } from './dtos/requests/create-report.request.dto';
-import { PostsService } from '../posts/posts.service';
+import { PaginatedReportsResponseDto } from './dtos/responses/get-reports.response.dto';
+import { ReportResponseDto } from './dtos/responses/report.response.dto';
 
 @Injectable()
 export class ReportService {
   constructor(
     @InjectRepository(Report)
     private readonly reportRepository: Repository<Report>,
-    private readonly postsService: PostsService,
+    @InjectRepository(Post)
+    private readonly postsRepository: Repository<Post>,
   ) {}
 
   async findAll(
@@ -44,29 +48,45 @@ export class ReportService {
     });
   }
 
-  async findOneById(id: string): Promise<Report | null> {
-    return this.reportRepository.findOneBy({ id });
+  async findOneById(id: string): Promise<Report> {
+    const report = await this.reportRepository.findOne({
+      where: { id, deletedAt: IsNull() },
+    });
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+    return report;
   }
 
   async create(createReportRequestDto: CreateReportRequestDto) {
-    const post = await this.postsService.getPostById(
-      createReportRequestDto.postId,
-    );
+    const post = await this.postsRepository.findOne({
+      where: { id: createReportRequestDto.postId, deletedAt: IsNull() },
+    });
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
-    const report = new Report();
-    report.reason = createReportRequestDto.reason;
-    report.description = createReportRequestDto.description;
-    report.post = post;
+    const report = this.reportRepository.create({
+      reason: createReportRequestDto.reason,
+      description: createReportRequestDto.description,
+      post,
+    });
 
     return this.reportRepository.save(report);
   }
 
   async update(id: string, reportEntity: Omit<Report, 'id'>): Promise<Report> {
-    await this.reportRepository.update(id, reportEntity);
-    return this.findOneById(id);
+    const report = await this.findOneById(id);
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    try {
+      await this.reportRepository.update(id, reportEntity);
+      return this.findOneById(id);
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update report');
+    }
   }
 
   async delete(id: string): Promise<void> {

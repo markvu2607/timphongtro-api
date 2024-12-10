@@ -6,18 +6,19 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
-import { Province } from './entities/province.entity';
-import { ProvincesService } from './provinces.service';
-import { Roles } from '../auth/decorators/roles.decorator';
-import { ERole } from '../auth/enums/role.enum';
-import { Public } from '../auth/decorators/public.decorator';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { ERole } from 'src/common/enums/role.enum';
+import { Public } from '../auth/decorators/public.decorator';
+import { Roles } from '../auth/decorators/roles.decorator';
+import { CreateProvinceRequestDto } from './dtos/requests/create-province.request.dto';
+import { UpdateProvinceRequestDto } from './dtos/requests/update-province.request.dto';
 import { PaginatedProvincesResponseDto } from './dtos/responses/get-provinces.response.dto';
 import { ProvinceResponseDto } from './dtos/responses/province.response.dto';
+import { ProvincesService } from './provinces.service';
 
 @Controller('provinces')
 export class ProvincesController {
@@ -51,24 +52,34 @@ export class ProvincesController {
   @Roles(ERole.ADMIN)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() province: Omit<Province, 'id'>) {
-    return this.provincesService.create(province);
+  async create(
+    @Body() createProvinceRequestDto: CreateProvinceRequestDto,
+  ): Promise<ProvinceResponseDto> {
+    const createdProvince = await this.provincesService.create(
+      createProvinceRequestDto,
+    );
+    return new ProvinceResponseDto(createdProvince);
   }
 
   @Roles(ERole.ADMIN)
-  @Put(':id')
+  @Patch(':id')
   @HttpCode(HttpStatus.OK)
   async update(
     @Param('id') id: string,
-    @Body() province: Omit<Province, 'id'>,
-  ) {
-    return this.provincesService.update(id, province);
+    @Body() updateProvinceRequestDto: UpdateProvinceRequestDto,
+  ): Promise<ProvinceResponseDto> {
+    const updatedProvince = await this.provincesService.update(
+      id,
+      updateProvinceRequestDto,
+    );
+    return new ProvinceResponseDto(updatedProvince);
   }
 
   @Roles(ERole.ADMIN)
   @Delete(':id')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id') id: string) {
-    return this.provincesService.delete(id);
+    await this.provincesService.delete(id);
+    return;
   }
 }

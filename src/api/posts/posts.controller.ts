@@ -12,7 +12,7 @@ import {
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { ERole } from '../auth/enums/role.enum';
+
 import { User } from '../users/decorators/user.decorator';
 import { CreatePostRequestDto } from './dtos/requests/create-post.request.dto';
 import { PostsService } from './posts.service';
@@ -20,6 +20,7 @@ import { Public } from '../auth/decorators/public.decorator';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { PostResponseDto } from './dtos/responses/post.response.dto';
 import { PaginatedPostsResponseDto } from './dtos/responses/get-posts.response.dto';
+import { ERole } from 'src/common/enums/role.enum';
 
 @Controller('posts')
 export class PostsController {

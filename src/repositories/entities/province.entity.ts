@@ -4,24 +4,28 @@ import {
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
-  JoinColumn,
-  ManyToOne,
+  OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { Post } from './post.entity';
+import { District, News, Post } from '.';
 
-@Entity('post_images')
-export class PostImage {
+@Entity('provinces')
+export class Province {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ length: 255 })
-  url: string;
+  name: string;
 
-  @ManyToOne(() => Post, (post) => post.id)
-  @JoinColumn({ name: 'post_id' })
-  post: Post;
+  @OneToMany(() => District, (district) => district.province)
+  districts: District[];
+
+  @OneToMany(() => Post, (post) => post.province)
+  posts: Post[];
+
+  @OneToMany(() => News, (news) => news.province)
+  news: News[];
 
   @CreateDateColumn()
   @Exclude()
