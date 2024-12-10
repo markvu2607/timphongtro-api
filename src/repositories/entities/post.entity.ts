@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
@@ -9,12 +10,8 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+import { District, Province, Report, User } from '.';
 import { PostImage } from './post-images.entity';
-import { Report } from 'src/api/reports/entities/report.entity';
-import { User } from 'src/api/users/entities/user.entity';
-import { District } from 'src/api/districts/entities/district.entity';
-import { Province } from 'src/api/provinces/entities/province.entity';
-import { Exclude } from 'class-transformer';
 
 @Entity('posts')
 export class Post {

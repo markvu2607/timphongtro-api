@@ -1,4 +1,4 @@
-import { User } from '../../entities/user.entity';
+import { User } from 'src/repositories/entities';
 
 export class UserResponseDto {
   public id: string;

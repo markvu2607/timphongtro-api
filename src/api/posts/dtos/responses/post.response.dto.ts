@@ -1,7 +1,7 @@
 import { DistrictResponseDto } from 'src/api/districts/dtos/responses/district.response.dto';
 import { ProvinceResponseDto } from 'src/api/provinces/dtos/responses/province.response.dto';
 import { UserResponseDto } from 'src/api/users/dtos/responses/user.response.dto';
-import { Post } from '../../entities/post.entity';
+import { Post } from 'src/repositories/entities';
 import { PostImageResponseDto } from './post-image.response.dto';
 
 export class PostResponseDto {

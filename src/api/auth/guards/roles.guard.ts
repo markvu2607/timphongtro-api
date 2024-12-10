@@ -7,7 +7,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
 import { MetadataKey } from 'src/common/constants/metadata-key.constant';
-import { ERole } from '../enums/role.enum';
+import { ERole } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class RolesGuard implements CanActivate {

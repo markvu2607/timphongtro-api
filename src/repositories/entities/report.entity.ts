@@ -1,3 +1,5 @@
+import { Exclude } from 'class-transformer';
+import { EReportStatus } from 'src/common/enums/report-status.enum';
 import {
   Column,
   CreateDateColumn,
@@ -8,9 +10,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
-import { EReportStatus } from '../enums/report-status.enum';
-import { Post } from 'src/api/posts/entities/post.entity';
-import { Exclude } from 'class-transformer';
+import { Post } from '.';
 
 @Entity('reports')
 export class Report {

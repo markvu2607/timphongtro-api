@@ -1,33 +1,31 @@
 import { Exclude } from 'class-transformer';
-import { District } from 'src/api/districts/entities/district.entity';
-import { News } from 'src/api/news/entities/news.entity';
-import { Post } from 'src/api/posts/entities/post.entity';
+import { Post, Province } from '.';
 import {
   Column,
   CreateDateColumn,
   DeleteDateColumn,
   Entity,
+  JoinColumn,
+  ManyToOne,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
-@Entity('provinces')
-export class Province {
+@Entity('districts')
+export class District {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column({ length: 255 })
   name: string;
 
-  @OneToMany(() => District, (district) => district.province)
-  districts: District[];
+  @ManyToOne(() => Province, (province) => province.id)
+  @JoinColumn({ name: 'province_id' })
+  province: Province;
 
-  @OneToMany(() => Post, (post) => post.province)
+  @OneToMany(() => Post, (post) => post.district)
   posts: Post[];
-
-  @OneToMany(() => News, (news) => news.province)
-  news: News[];
 
   @CreateDateColumn()
   @Exclude()

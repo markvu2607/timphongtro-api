@@ -12,12 +12,12 @@ import {
   Query,
 } from '@nestjs/common';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { ERole } from 'src/common/enums/role.enum';
+import { User as UserEntity } from 'src/repositories/entities';
 import { Roles } from '../auth/decorators/roles.decorator';
-import { ERole } from '../auth/enums/role.enum';
 import { User } from './decorators/user.decorator';
 import { PaginatedUsersResponseDto } from './dtos/responses/get-users.response.dto';
 import { UserResponseDto } from './dtos/responses/user.response.dto';
-import { User as UserEntity } from './entities/user.entity';
 import { UsersService } from './users.service';
 
 @Controller('users')
