@@ -14,6 +14,7 @@ import { Report } from 'src/api/reports/entities/report.entity';
 import { User } from 'src/api/users/entities/user.entity';
 import { District } from 'src/api/districts/entities/district.entity';
 import { Province } from 'src/api/provinces/entities/province.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('posts')
 export class Post {
@@ -57,11 +58,14 @@ export class Post {
   user: User;
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date;
 }

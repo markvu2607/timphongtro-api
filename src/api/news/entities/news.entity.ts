@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Province } from 'src/api/provinces/entities/province.entity';
 import {
   Column,
@@ -11,7 +12,7 @@ import {
 } from 'typeorm';
 
 @Entity('news')
-export class New {
+export class News {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
@@ -32,11 +33,14 @@ export class New {
   province: Province;
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date;
 }

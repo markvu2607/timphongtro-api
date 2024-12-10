@@ -6,37 +6,42 @@ import {
   Param,
   Post,
   Put,
+  Query,
 } from '@nestjs/common';
 import { DistrictsService } from './districts.service';
 import { District } from './entities/district.entity';
 import { ERole } from '../auth/enums/role.enum';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { Public } from '../auth/decorators/public.decorator';
+import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { PaginatedDistrictsResponseDto } from './dtos/responses/get-districts.response.dto';
 
 @Controller('districts')
 export class DistrictsController {
   constructor(private readonly districtsService: DistrictsService) {}
 
-  @Get()
   @Public()
-  async findAll() {
-    return this.districtsService.findAll();
+  @Get()
+  async findAll(
+    @Query() query: PaginationRequestDto,
+  ): Promise<PaginatedDistrictsResponseDto> {
+    return this.districtsService.findAll(query);
   }
 
-  @Get(':id')
   @Public()
+  @Get(':id')
   async findOneById(@Param('id') id: string) {
     return this.districtsService.findOneById(id);
   }
 
-  @Post()
   @Roles(ERole.ADMIN)
+  @Post()
   async create(@Body() district: Omit<District, 'id'>) {
     return this.districtsService.create(district);
   }
 
-  @Put(':id')
   @Roles(ERole.ADMIN)
+  @Put(':id')
   async update(
     @Param('id') id: string,
     @Body() district: Omit<District, 'id'>,
@@ -44,8 +49,8 @@ export class DistrictsController {
     return this.districtsService.update(id, district);
   }
 
-  @Delete(':id')
   @Roles(ERole.ADMIN)
+  @Delete(':id')
   async delete(@Param('id') id: string) {
     return this.districtsService.delete(id);
   }

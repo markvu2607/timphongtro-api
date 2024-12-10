@@ -1,5 +1,6 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { Repository } from 'typeorm';
 import { Province } from './entities/province.entity';
 
@@ -10,12 +11,40 @@ export class ProvincesService {
     private readonly provincesRepository: Repository<Province>,
   ) {}
 
-  async findAll(): Promise<Province[]> {
-    return this.provincesRepository.find();
+  async findAll(query: PaginationRequestDto): Promise<{
+    provinces: Province[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const { page, limit, search, sortBy, sortOrder } = query;
+    const skip = (page - 1) * limit;
+
+    const queryBuilder =
+      this.provincesRepository.createQueryBuilder('province');
+
+    if (search) {
+      queryBuilder.where('province.name LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    queryBuilder
+      .orderBy(`province.${sortBy}`, sortOrder)
+      .skip(skip)
+      .take(limit);
+
+    const [provinces, total] = await queryBuilder.getManyAndCount();
+
+    return { provinces, total, page, limit };
   }
 
   async findOneById(id: string): Promise<Province | null> {
-    return this.provincesRepository.findOneBy({ id });
+    const province = await this.provincesRepository.findOneBy({ id });
+    if (!province) {
+      throw new NotFoundException('Province not found');
+    }
+    return province;
   }
 
   async create(province: Omit<Province, 'id'>): Promise<Province> {

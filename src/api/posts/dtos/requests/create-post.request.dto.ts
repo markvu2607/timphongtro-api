@@ -24,7 +24,4 @@ export class CreatePostRequestDto {
 
   @IsNotEmpty()
   provinceId: string;
-
-  @IsNotEmpty()
-  postImages: string[];
 }

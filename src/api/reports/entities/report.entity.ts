@@ -10,6 +10,7 @@ import {
 } from 'typeorm';
 import { EReportStatus } from '../enums/report-status.enum';
 import { Post } from 'src/api/posts/entities/post.entity';
+import { Exclude } from 'class-transformer';
 
 @Entity('reports')
 export class Report {
@@ -34,11 +35,14 @@ export class Report {
   post: Post;
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date;
 }
