@@ -48,11 +48,9 @@ export class User {
   tokenExpiration: Date;
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()

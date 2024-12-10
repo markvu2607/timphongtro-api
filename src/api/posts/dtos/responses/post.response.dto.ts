@@ -27,9 +27,11 @@ export class PostResponseDto {
     this.address = post.address;
     this.longitude = post.longitude;
     this.latitude = post.latitude;
-    this.district = post.district;
-    this.province = post.province;
-    this.user = post.user;
-    this.postImages = post.postImages;
+    this.district = new DistrictResponseDto(post.district);
+    this.province = new ProvinceResponseDto(post.province);
+    this.user = new UserResponseDto(post.user);
+    this.postImages = post.postImages.map(
+      (postImage) => new PostImageResponseDto(postImage),
+    );
   }
 }

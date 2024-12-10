@@ -8,8 +8,7 @@ import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.reques
 import { Post, Report } from 'src/repositories/entities';
 import { IsNull, Like, Repository } from 'typeorm';
 import { CreateReportRequestDto } from './dtos/requests/create-report.request.dto';
-import { PaginatedReportsResponseDto } from './dtos/responses/get-reports.response.dto';
-import { ReportResponseDto } from './dtos/responses/report.response.dto';
+import { UpdateReportRequestDto } from './dtos/requests/update-report.request.dto';
 
 @Injectable()
 export class ReportService {
@@ -20,13 +19,18 @@ export class ReportService {
     private readonly postsRepository: Repository<Post>,
   ) {}
 
-  async findAll(
-    query: PaginationRequestDto,
-  ): Promise<PaginatedReportsResponseDto> {
+  async findAll(query: PaginationRequestDto): Promise<{
+    reports: Report[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
     const { page, limit, search, sortBy, sortOrder } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.reportRepository.createQueryBuilder('report');
+
+    queryBuilder.where('report.deletedAt IS NULL');
 
     if (search) {
       queryBuilder.where({ reason: Like(`%${search}%`) });
@@ -40,12 +44,12 @@ export class ReportService {
 
     const [reports, total] = await queryBuilder.getManyAndCount();
 
-    return new PaginatedReportsResponseDto({
-      items: reports.map((report) => new ReportResponseDto(report)),
+    return {
+      reports,
       total,
       page,
       limit,
-    });
+    };
   }
 
   async findOneById(id: string): Promise<Report> {
@@ -75,14 +79,29 @@ export class ReportService {
     return this.reportRepository.save(report);
   }
 
-  async update(id: string, reportEntity: Omit<Report, 'id'>): Promise<Report> {
+  async update(
+    id: string,
+    updateReportRequestDto: UpdateReportRequestDto,
+  ): Promise<Report> {
     const report = await this.findOneById(id);
     if (!report) {
       throw new NotFoundException('Report not found');
     }
 
+    const { postId, ...rest } = updateReportRequestDto;
+
+    let post = report.post;
+    if (postId) {
+      post = await this.postsRepository.findOne({
+        where: { id: postId, deletedAt: IsNull() },
+      });
+      if (!post) {
+        throw new NotFoundException('Post not found');
+      }
+    }
+
     try {
-      await this.reportRepository.update(id, reportEntity);
+      await this.reportRepository.update(id, { ...rest, post });
       return this.findOneById(id);
     } catch (error) {
       throw new InternalServerErrorException('Failed to update report');
@@ -90,6 +109,6 @@ export class ReportService {
   }
 
   async delete(id: string): Promise<void> {
-    await this.reportRepository.delete(id);
+    await this.reportRepository.softDelete(id);
   }
 }

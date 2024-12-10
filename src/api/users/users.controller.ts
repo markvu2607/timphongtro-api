@@ -8,17 +8,17 @@ import {
   Param,
   Patch,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { ERole } from 'src/common/enums/role.enum';
-import { User as UserEntity } from 'src/repositories/entities';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { User } from './decorators/user.decorator';
 import { PaginatedUsersResponseDto } from './dtos/responses/get-users.response.dto';
 import { UserResponseDto } from './dtos/responses/user.response.dto';
 import { UsersService } from './users.service';
+import { UpdateUserRequestDto } from './dtos/requests/update-user.request.dto';
+import { CreateUserRequestDto } from './dtos/requests/create-user.request.dto';
 
 @Controller('users')
 export class UsersController {
@@ -26,17 +26,19 @@ export class UsersController {
 
   @Get('me')
   @HttpCode(HttpStatus.OK)
-  async getMe(@User('sub') userId: string) {
-    return this.usersService.findOneById(userId);
+  async getMe(@User('sub') userId: string): Promise<UserResponseDto> {
+    const user = await this.usersService.findOneById(userId);
+    return new UserResponseDto(user);
   }
 
   @Patch('me')
   @HttpCode(HttpStatus.OK)
   async updateMe(
     @User('sub') userId: string,
-    @Body() user: Partial<Omit<UserEntity, 'id'>>,
-  ) {
-    return this.usersService.update(userId, user);
+    @Body() user: UpdateUserRequestDto,
+  ): Promise<UserResponseDto> {
+    const updatedUser = await this.usersService.update(userId, user);
+    return new UserResponseDto(updatedUser);
   }
 
   @Roles(ERole.ADMIN)
@@ -67,22 +69,32 @@ export class UsersController {
   @Roles(ERole.ADMIN)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async create(@Body() user: Omit<UserEntity, 'id'>): Promise<UserResponseDto> {
-    const createdUser = await this.usersService.create(user);
+  async createAdminUser(
+    @Body() createUserRequestDto: CreateUserRequestDto,
+  ): Promise<UserResponseDto> {
+    const createdUser =
+      await this.usersService.createAdminUser(createUserRequestDto);
     return new UserResponseDto(createdUser);
   }
 
   @Roles(ERole.ADMIN)
-  @Put(':id')
+  @Patch(':id')
   @HttpCode(HttpStatus.OK)
-  async update(@Param('id') id: string, @Body() user: Omit<UserEntity, 'id'>) {
-    return this.usersService.update(id, user);
+  async update(
+    @Param('id') id: string,
+    @Body() updateUserRequestDto: UpdateUserRequestDto,
+  ): Promise<UserResponseDto> {
+    const updatedUser = await this.usersService.update(
+      id,
+      updateUserRequestDto,
+    );
+    return new UserResponseDto(updatedUser);
   }
 
   @Roles(ERole.ADMIN)
   @Delete(':id')
-  @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id') id: string) {
-    return this.usersService.delete(id);
+    return await this.usersService.delete(id);
   }
 }

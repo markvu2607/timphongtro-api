@@ -134,7 +134,7 @@ export class DistrictsService {
     }
 
     try {
-      await this.districtsRepository.delete(id);
+      await this.districtsRepository.softDelete(id);
       return;
     } catch (error) {
       throw new InternalServerErrorException('Failed to delete district');

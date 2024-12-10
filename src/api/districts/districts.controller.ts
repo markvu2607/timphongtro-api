@@ -78,7 +78,6 @@ export class DistrictsController {
   @Delete(':id')
   @HttpCode(HttpStatus.NO_CONTENT)
   async delete(@Param('id') id: string) {
-    await this.districtsService.delete(id);
-    return;
+    return await this.districtsService.delete(id);
   }
 }

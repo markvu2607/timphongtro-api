@@ -35,11 +35,9 @@ export class Report {
   post: Post;
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()

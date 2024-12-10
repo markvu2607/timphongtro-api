@@ -6,10 +6,10 @@ import {
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { District, News, Post, Province } from 'src/repositories/entities';
 import { IsNull, Repository } from 'typeorm';
 import { CreateProvinceRequestDto } from './dtos/requests/create-province.request.dto';
 import { UpdateProvinceRequestDto } from './dtos/requests/update-province.request.dto';
-import { District, News, Post, Province } from 'src/repositories/entities';
 
 @Injectable()
 export class ProvincesService {
