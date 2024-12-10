@@ -8,6 +8,7 @@ import {
 } from 'typeorm';
 import { IsEmail, IsOptional } from 'class-validator';
 import { ERole } from '../../auth/enums/role.enum';
+import { Exclude } from 'class-transformer';
 
 @Entity('users')
 export class User {
@@ -38,18 +39,23 @@ export class User {
 
   @Column({ default: null })
   @IsOptional()
+  @Exclude()
   verificationToken: string;
 
   @Column({ default: null })
   @IsOptional()
+  @Exclude()
   tokenExpiration: Date;
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date;
 }

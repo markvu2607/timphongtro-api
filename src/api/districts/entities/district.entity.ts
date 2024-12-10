@@ -1,3 +1,4 @@
+import { Exclude } from 'class-transformer';
 import { Post } from 'src/api/posts/entities/post.entity';
 import { Province } from 'src/api/provinces/entities/province.entity';
 import {
@@ -28,11 +29,14 @@ export class District {
   posts: Post[];
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date;
 }

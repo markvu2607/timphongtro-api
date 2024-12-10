@@ -1,8 +1,9 @@
-import { Injectable } from '@nestjs/common';
-import { Repository } from 'typeorm';
-import { User } from './entities/user.entity';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { Like, Repository } from 'typeorm';
 import { UserResponseDto } from './dtos/responses/user.response.dto';
+import { User } from './entities/user.entity';
 
 @Injectable()
 export class UsersService {
@@ -11,22 +12,48 @@ export class UsersService {
     private readonly usersRepository: Repository<User>,
   ) {}
 
-  async findOneById(id: string): Promise<UserResponseDto> {
+  async findOneById(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
       where: { id: id },
     });
 
-    return new UserResponseDto(user);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    return user;
   }
 
-  async findAll(): Promise<UserResponseDto[]> {
-    const users = await this.usersRepository.find();
-    return users.map((user) => new UserResponseDto(user));
+  async findAll(query: PaginationRequestDto): Promise<{
+    users: User[];
+    total: number;
+    page: number;
+    limit: number;
+  }> {
+    const { page, limit, search, sortBy, sortOrder } = query;
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.usersRepository.createQueryBuilder('user');
+
+    if (search) {
+      queryBuilder.where([
+        { name: Like(`%${search}%`) },
+        { email: Like(`%${search}%`) },
+        { phone: Like(`%${search}%`) },
+      ]);
+    }
+
+    queryBuilder.orderBy(`user.${sortBy}`, sortOrder).skip(skip).take(limit);
+
+    const [users, total] = await queryBuilder.getManyAndCount();
+
+    return { users, total, page, limit };
   }
 
-  async create(user: Omit<User, 'id'>): Promise<UserResponseDto> {
+  async create(user: Omit<User, 'id'>): Promise<User> {
     const createdUser = await this.usersRepository.save(user);
-    return new UserResponseDto(createdUser);
+
+    return createdUser;
   }
 
   async update(

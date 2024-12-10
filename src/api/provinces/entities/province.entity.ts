@@ -1,5 +1,6 @@
+import { Exclude } from 'class-transformer';
 import { District } from 'src/api/districts/entities/district.entity';
-import { New } from 'src/api/news/entities/new.entity';
+import { News } from 'src/api/news/entities/news.entity';
 import { Post } from 'src/api/posts/entities/post.entity';
 import {
   Column,
@@ -25,15 +26,18 @@ export class Province {
   @OneToMany(() => Post, (post) => post.province)
   posts: Post[];
 
-  @OneToMany(() => New, (newEntity) => newEntity.province)
-  news: New[];
+  @OneToMany(() => News, (news) => news.province)
+  news: News[];
 
   @CreateDateColumn()
+  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
+  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()
+  @Exclude()
   deletedAt: Date;
 }

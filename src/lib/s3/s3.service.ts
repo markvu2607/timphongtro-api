@@ -1,11 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import {
-  S3Client,
-  PutObjectCommand,
-  GetObjectCommand,
-} from '@aws-sdk/client-s3';
-import { GetObjectCommandOutput } from '@aws-sdk/client-s3';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
 @Injectable()
 export class S3Service {
@@ -22,10 +17,32 @@ export class S3Service {
   }
 
   async uploadFile(key: string, body: Buffer | Uint8Array | Blob | string) {
+    const fileExtension = key.split('.').pop()?.toLowerCase();
+    let contentType = 'application/octet-stream';
+
+    if (fileExtension) {
+      switch (fileExtension) {
+        case 'jpg':
+        case 'jpeg':
+          contentType = 'image/jpeg';
+          break;
+        case 'png':
+          contentType = 'image/png';
+          break;
+        case 'gif':
+          contentType = 'image/gif';
+          break;
+        case 'webp':
+          contentType = 'image/webp';
+          break;
+      }
+    }
+
     const command = new PutObjectCommand({
       Bucket: this.configService.get<string>('aws.s3.bucketName'),
       Key: key,
       Body: body,
+      ContentType: contentType,
     });
 
     try {
@@ -33,21 +50,6 @@ export class S3Service {
       return response;
     } catch (error) {
       console.error('Error uploading file:', error);
-      throw error;
-    }
-  }
-
-  async getFile(key: string): Promise<GetObjectCommandOutput> {
-    const command = new GetObjectCommand({
-      Bucket: this.configService.get<string>('aws.s3.bucketName'),
-      Key: key,
-    });
-
-    try {
-      const response = await this.s3Client.send(command);
-      return response;
-    } catch (error) {
-      console.error('Error getting file:', error);
       throw error;
     }
   }

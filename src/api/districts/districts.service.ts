@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 import { District } from './entities/district.entity';
+import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { PaginatedDistrictsResponseDto } from './dtos/responses/get-districts.response.dto';
+import { DistrictResponseDto } from './dtos/responses/district.response.dto';
 
 @Injectable()
 export class DistrictsService {
@@ -10,8 +13,32 @@ export class DistrictsService {
     private readonly districtsRepository: Repository<District>,
   ) {}
 
-  async findAll(): Promise<District[]> {
-    return this.districtsRepository.find();
+  async findAll(
+    query: PaginationRequestDto,
+  ): Promise<PaginatedDistrictsResponseDto> {
+    const { page, limit, search, sortBy, sortOrder } = query;
+    const skip = (page - 1) * limit;
+
+    const queryBuilder =
+      this.districtsRepository.createQueryBuilder('district');
+
+    if (search) {
+      queryBuilder.where({ name: Like(`%${search}%`) });
+    }
+
+    const [districts, total] = await queryBuilder
+      .leftJoinAndSelect('district.province', 'province')
+      .orderBy(`district.${sortBy}`, sortOrder)
+      .skip(skip)
+      .take(limit)
+      .getManyAndCount();
+
+    return new PaginatedDistrictsResponseDto({
+      items: districts.map((district) => new DistrictResponseDto(district)),
+      total,
+      page,
+      limit,
+    });
   }
 
   async findOneById(id: string): Promise<District | null> {

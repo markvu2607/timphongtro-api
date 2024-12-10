@@ -6,7 +6,6 @@ import { SignInRequestDto } from './dtos/requests/sign-in.request.dto';
 import { SignUpResponseDto } from './dtos/responses/sign-up.response.dto';
 import { SignInResponseDto } from './dtos/responses/sign-in.response.dto';
 import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
-import { VerifyEmailResponseDto } from './dtos/responses/verify-email.response.dto';
 
 @Controller('auth')
 export class AuthController {
@@ -29,9 +28,7 @@ export class AuthController {
   @Public()
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
-  verifyEmail(
-    @Body() body: VerifyEmailRequestDto,
-  ): Promise<VerifyEmailResponseDto> {
+  verifyEmail(@Body() body: VerifyEmailRequestDto) {
     return this.authService.verifyEmail(body);
   }
 }

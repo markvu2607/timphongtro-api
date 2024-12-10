@@ -10,18 +10,17 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import ms from 'ms';
-import { Repository } from 'typeorm';
 import { PgErrorCode } from 'src/common/constants/pg-error-code.constant';
+import { Repository } from 'typeorm';
+import { generateVerificationLink } from '../../common/utils';
+import { UserResponseDto } from '../users/dtos/responses/user.response.dto';
 import { User } from '../users/entities/user.entity';
 import { SignInRequestDto } from './dtos/requests/sign-in.request.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up.request.dto';
+import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
 import { SignInResponseDto } from './dtos/responses/sign-in.response.dto';
 import { SignUpResponseDto } from './dtos/responses/sign-up.response.dto';
 import { HashingService } from './hashing/hashing.service';
-import { generateVerificationLink } from '../../common/utils';
-import { VerifyEmailResponseDto } from './dtos/responses/verify-email.response.dto';
-import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
-import { UserResponseDto } from '../users/dtos/responses/user.response.dto';
 
 @Injectable()
 export class AuthService {
@@ -121,7 +120,6 @@ export class AuthService {
     const user = await this.usersRepository.findOneBy({
       verificationToken: token,
     });
-
     if (!user) {
       throw new BadRequestException('Token invalid.');
     }
@@ -133,8 +131,6 @@ export class AuthService {
     });
 
     await this.usersRepository.save(updatedUser);
-
-    return new VerifyEmailResponseDto();
   }
 
   async generateJwtToken(
