@@ -19,7 +19,6 @@ import { SignInRequestDto } from './dtos/requests/sign-in.request.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up.request.dto';
 import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
 import { SignInResponseDto } from './dtos/responses/sign-in.response.dto';
-import { SignUpResponseDto } from './dtos/responses/sign-up.response.dto';
 import { HashingService } from './hashing/hashing.service';
 
 @Injectable()
@@ -33,7 +32,10 @@ export class AuthService {
     private readonly mailerService: MailerService,
   ) {}
 
-  async signUp(signUpRequestDto: SignUpRequestDto): Promise<SignUpResponseDto> {
+  async signUp(signUpRequestDto: SignUpRequestDto): Promise<{
+    user: User;
+    accessToken: string;
+  }> {
     try {
       const hashedPassword = await this.hashingService.hash(
         signUpRequestDto.password,
@@ -75,10 +77,7 @@ export class AuthService {
         },
       });
 
-      return new SignUpResponseDto({
-        user: new UserResponseDto(savedUser),
-        accessToken,
-      });
+      return { user, accessToken };
     } catch (error) {
       if (error.code === PgErrorCode.UNIQUE_VIOLATION) {
         throw new ConflictException();
@@ -87,7 +86,10 @@ export class AuthService {
     }
   }
 
-  async signIn(signInRequestDto: SignInRequestDto): Promise<SignInResponseDto> {
+  async signIn(signInRequestDto: SignInRequestDto): Promise<{
+    user: User;
+    accessToken: string;
+  }> {
     const user = await this.usersRepository.findOne({
       where: { email: signInRequestDto.email },
     });
@@ -110,10 +112,7 @@ export class AuthService {
       role: user.role,
     });
 
-    return new SignInResponseDto({
-      user: new UserResponseDto(user),
-      accessToken: accessToken,
-    });
+    return { user, accessToken };
   }
 
   async verifyEmail({ token }: VerifyEmailRequestDto) {
