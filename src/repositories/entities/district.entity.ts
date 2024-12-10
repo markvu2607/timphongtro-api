@@ -28,11 +28,9 @@ export class District {
   posts: Post[];
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()

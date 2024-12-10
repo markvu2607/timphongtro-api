@@ -28,11 +28,9 @@ export class Province {
   news: News[];
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
 
   @DeleteDateColumn()

@@ -1,26 +1,28 @@
 import {
   Body,
   Controller,
+  Delete,
   Get,
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Query,
   UploadedFiles,
   UseInterceptors,
 } from '@nestjs/common';
 import { FilesInterceptor } from '@nestjs/platform-express';
+import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { ERole } from 'src/common/enums/role.enum';
+import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
-
 import { User } from '../users/decorators/user.decorator';
 import { CreatePostRequestDto } from './dtos/requests/create-post.request.dto';
-import { PostsService } from './posts.service';
-import { Public } from '../auth/decorators/public.decorator';
-import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
-import { PostResponseDto } from './dtos/responses/post.response.dto';
 import { PaginatedPostsResponseDto } from './dtos/responses/get-posts.response.dto';
-import { ERole } from 'src/common/enums/role.enum';
+import { PostResponseDto } from './dtos/responses/post.response.dto';
+import { PostsService } from './posts.service';
+import { UpdatePostRequestDto } from './dtos/requests/update-post.request.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -35,11 +37,13 @@ export class PostsController {
     @Body() createPostRequestDto: CreatePostRequestDto,
     @UploadedFiles() postImages: Express.Multer.File[],
   ) {
-    return this.postsService.createPost(
+    const post = await this.postsService.createPost(
       userId,
       createPostRequestDto,
       postImages,
     );
+
+    return new PostResponseDto(post);
   }
 
   @Public()
@@ -63,5 +67,33 @@ export class PostsController {
       page,
       limit,
     });
+  }
+
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FilesInterceptor('postImages', 10))
+  async updatePost(
+    @User() user: { sub: string; role: ERole },
+    @Param('id') id: string,
+    @Body() updatePostRequestDto: UpdatePostRequestDto,
+    @UploadedFiles() postImages: Express.Multer.File[],
+  ): Promise<PostResponseDto> {
+    const post = await this.postsService.updatePost(
+      user,
+      id,
+      updatePostRequestDto,
+      postImages,
+    );
+
+    return new PostResponseDto(post);
+  }
+
+  @Delete(':id')
+  @HttpCode(HttpStatus.NO_CONTENT)
+  async deletePost(
+    @User() user: { sub: string; role: ERole },
+    @Param('id') id: string,
+  ) {
+    return await this.postsService.deletePost(user, id);
   }
 }

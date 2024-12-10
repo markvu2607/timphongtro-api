@@ -1,6 +1,7 @@
 import {
   BadRequestException,
   Injectable,
+  InternalServerErrorException,
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -9,6 +10,7 @@ import { S3Service } from 'src/lib/s3/s3.service';
 import { News, Province } from 'src/repositories/entities';
 import { Repository } from 'typeorm';
 import { CreateNewsRequestDto } from './dtos/requests/create-news.request.dto';
+import { UpdateNewsRequestDto } from './dtos/requests/update-news.request.dto';
 
 @Injectable()
 export class NewsService {
@@ -30,6 +32,8 @@ export class NewsService {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.newsRepository.createQueryBuilder('news');
+
+    queryBuilder.where('news.deletedAt IS NULL');
 
     if (search) {
       queryBuilder.where('news.title LIKE :search', {
@@ -83,12 +87,49 @@ export class NewsService {
     return this.newsRepository.save(news);
   }
 
-  async update(id: string, news: Omit<News, 'id'>): Promise<News> {
-    await this.newsRepository.update(id, news);
-    return this.findOneById(id);
+  async update(
+    id: string,
+    updateNewsRequestDto: UpdateNewsRequestDto,
+  ): Promise<News> {
+    const news = await this.findOneById(id);
+    if (!news) {
+      throw new NotFoundException('News not found');
+    }
+
+    const { provinceId, ...rest } = updateNewsRequestDto;
+
+    let province = news.province;
+    if (provinceId) {
+      province = await this.provinceRepository.findOneBy({
+        id: provinceId,
+      });
+      if (!province) {
+        throw new NotFoundException('Province not found');
+      }
+    }
+
+    try {
+      await this.newsRepository.update(id, {
+        ...rest,
+        province,
+      });
+      return this.findOneById(id);
+    } catch (error) {
+      throw new InternalServerErrorException('Failed to update news');
+    }
   }
 
   async delete(id: string): Promise<void> {
-    await this.newsRepository.delete(id);
+    const news = await this.findOneById(id);
+    if (!news) {
+      throw new NotFoundException('News not found');
+    }
+
+    try {
+      await this.newsRepository.softDelete(id);
+      return;
+    } catch (error) {
+      throw new BadRequestException('Cannot delete news');
+    }
   }
 }
