@@ -42,6 +42,14 @@ export class DistrictsController {
   }
 
   @Public()
+  @Get('all')
+  @HttpCode(HttpStatus.OK)
+  async findAllWithoutPagination(): Promise<DistrictResponseDto[]> {
+    const districts = await this.districtsService.findAllWithoutPagination();
+    return districts.map((district) => new DistrictResponseDto(district));
+  }
+
+  @Public()
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOneById(@Param('id') id: string): Promise<DistrictResponseDto> {

@@ -52,6 +52,10 @@ export class DistrictsService {
     return { districts, total, page, limit };
   }
 
+  async findAllWithoutPagination(): Promise<District[]> {
+    return this.districtsRepository.find({ where: { deletedAt: IsNull() } });
+  }
+
   async findOneById(id: string): Promise<District> {
     const district = await this.districtsRepository
       .createQueryBuilder('district')

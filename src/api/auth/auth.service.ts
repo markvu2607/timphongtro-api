@@ -10,15 +10,14 @@ import { ConfigService } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 import { InjectRepository } from '@nestjs/typeorm';
 import ms from 'ms';
-import { PgErrorCode } from 'src/common/constants/pg-error-code.constant';
-import { User } from 'src/repositories/entities';
 import { Repository } from 'typeorm';
+
+import { PgErrorCode } from 'src/common/constants';
+import { User } from 'src/repositories/entities';
 import { generateVerificationLink } from '../../common/utils';
-import { UserResponseDto } from '../users/dtos/responses/user.response.dto';
 import { SignInRequestDto } from './dtos/requests/sign-in.request.dto';
 import { SignUpRequestDto } from './dtos/requests/sign-up.request.dto';
 import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
-import { SignInResponseDto } from './dtos/responses/sign-in.response.dto';
 import { HashingService } from './hashing/hashing.service';
 
 @Injectable()
@@ -115,12 +114,51 @@ export class AuthService {
     return { user, accessToken };
   }
 
+  async sendVerificationEmail(userId: string) {
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    if (!user) {
+      throw new NotFoundException('User not found.');
+    }
+
+    if (user.isVerified) {
+      throw new BadRequestException('Email already verified.');
+    }
+
+    const verificationToken = await this.hashingService.hash(user.email);
+
+    this.mailerService.sendMail({
+      to: user.email,
+      subject: 'Verify Email',
+      template: 'verify-email',
+      context: {
+        verification_link: generateVerificationLink(
+          this.configService.get<string>('web.url'),
+          verificationToken,
+        ),
+      },
+    });
+
+    this.usersRepository.merge(user, {
+      verificationToken,
+      tokenExpiration: new Date(
+        Date.now() +
+          ms(this.configService.get<string>('app.verificationTokenTTL')),
+      ),
+    });
+
+    await this.usersRepository.save(user);
+  }
+
   async verifyEmail({ token }: VerifyEmailRequestDto) {
     const user = await this.usersRepository.findOneBy({
       verificationToken: token,
     });
     if (!user) {
       throw new BadRequestException('Token invalid.');
+    }
+
+    if (user.tokenExpiration < new Date()) {
+      throw new BadRequestException('Token expired.');
     }
 
     const updatedUser = this.usersRepository.merge(user, {

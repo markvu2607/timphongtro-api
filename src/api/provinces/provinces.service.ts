@@ -54,6 +54,10 @@ export class ProvincesService {
     return { provinces, total, page, limit };
   }
 
+  async findAllWithoutPagination(): Promise<Province[]> {
+    return this.provincesRepository.find({ where: { deletedAt: IsNull() } });
+  }
+
   async findOneById(id: string): Promise<Province> {
     const province = await this.provincesRepository.findOne({
       where: { id, deletedAt: IsNull() },
