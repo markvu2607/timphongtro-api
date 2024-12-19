@@ -57,8 +57,9 @@ export class UsersController {
   async changeAvatar(
     @User('sub') userId: string,
     @UploadedFiles() avatar: Express.Multer.File[],
-  ): Promise<void> {
-    return await this.usersService.changeAvatar(userId, avatar[0]);
+  ) {
+    await this.usersService.changeAvatar(userId, avatar[0]);
+    return {};
   }
 
   @Roles(ERole.ADMIN)

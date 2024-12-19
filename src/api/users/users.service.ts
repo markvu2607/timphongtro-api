@@ -124,7 +124,7 @@ export class UsersService {
   async changeAvatar(
     userId: string,
     avatar: Express.Multer.File,
-  ): Promise<Record<string, never>> {
+  ): Promise<void> {
     const user = await this.findOneById(userId);
     if (!user) {
       throw new NotFoundException('User not found');
@@ -142,6 +142,5 @@ export class UsersService {
 
     user.avatar = url;
     await this.usersRepository.save(user);
-    return {};
   }
 }
