@@ -12,6 +12,7 @@ import {
 } from 'typeorm';
 import { District, Province, Report, User } from '.';
 import { PostImage } from './post-images.entity';
+import { EPostStatus } from 'src/common/enums/post-status.enum';
 
 @Entity('posts')
 export class Post {
@@ -30,11 +31,14 @@ export class Post {
   @Column({ length: 255 })
   address: string;
 
-  @Column()
+  @Column({ type: 'float' })
   longitude: number;
 
-  @Column()
+  @Column({ type: 'float' })
   latitude: number;
+
+  @Column({ type: 'enum', enum: EPostStatus, default: EPostStatus.REVIEWING })
+  status: string;
 
   @ManyToOne(() => District, (district) => district.id)
   @JoinColumn({ name: 'district_id' })
@@ -53,6 +57,9 @@ export class Post {
   @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @Column({ type: 'timestamp', default: null, nullable: true })
+  publishedAt: Date;
 
   @CreateDateColumn()
   @Exclude()

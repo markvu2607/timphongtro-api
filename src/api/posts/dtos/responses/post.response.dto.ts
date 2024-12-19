@@ -13,6 +13,7 @@ export class PostResponseDto {
   public address: string;
   public longitude: number;
   public latitude: number;
+  public status: string;
   public district: DistrictResponseDto;
   public province: ProvinceResponseDto;
   public user: UserResponseDto;
@@ -27,6 +28,7 @@ export class PostResponseDto {
     this.address = post.address;
     this.longitude = post.longitude;
     this.latitude = post.latitude;
+    this.status = post.status;
     this.district = new DistrictResponseDto(post.district);
     this.province = new ProvinceResponseDto(post.province);
     this.user = new UserResponseDto(post.user);

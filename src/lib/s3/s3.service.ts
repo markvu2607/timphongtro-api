@@ -2,6 +2,8 @@ import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 
+import { v4 as uuidv4 } from 'uuid';
+
 @Injectable()
 export class S3Service {
   private readonly s3Client: S3Client;
@@ -16,8 +18,12 @@ export class S3Service {
     });
   }
 
-  async uploadFile(key: string, body: Buffer | Uint8Array | Blob | string) {
-    const fileExtension = key.split('.').pop()?.toLowerCase();
+  async uploadFile(
+    fileName: string,
+    body: Buffer | Uint8Array | Blob | string,
+  ) {
+    const fileExtension = fileName.split('.').pop()?.toLowerCase();
+    const key = `${uuidv4()}.${fileExtension}`;
     let contentType = 'application/octet-stream';
 
     if (fileExtension) {
@@ -46,8 +52,8 @@ export class S3Service {
     });
 
     try {
-      const response = await this.s3Client.send(command);
-      return response;
+      await this.s3Client.send(command);
+      return key;
     } catch (error) {
       console.error('Error uploading file:', error);
       throw error;

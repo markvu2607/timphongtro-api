@@ -1,3 +1,3 @@
 export const generateVerificationLink = (host: string, token: string) => {
-  return `${host}/verify-email?token=${token}`;
+  return `${host}/auth/verify-email?token=${token}`;
 };

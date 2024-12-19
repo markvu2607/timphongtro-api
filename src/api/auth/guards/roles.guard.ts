@@ -6,7 +6,7 @@ import {
 } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
 import { Observable } from 'rxjs';
-import { MetadataKey } from 'src/common/constants/metadata-key.constant';
+import { MetadataKey } from 'src/common/constants';
 import { ERole } from 'src/common/enums/role.enum';
 
 @Injectable()

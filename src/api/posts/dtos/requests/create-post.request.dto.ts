@@ -8,9 +8,6 @@ export class CreatePostRequestDto {
   description: string;
 
   @IsNotEmpty()
-  thumbnail: string;
-
-  @IsNotEmpty()
   address: string;
 
   @IsNotEmpty()

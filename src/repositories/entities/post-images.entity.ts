@@ -17,6 +17,9 @@ export class PostImage {
   id: string;
 
   @Column({ length: 255 })
+  key: string;
+
+  @Column({ length: 255 })
   url: string;
 
   @ManyToOne(() => Post, (post) => post.id)

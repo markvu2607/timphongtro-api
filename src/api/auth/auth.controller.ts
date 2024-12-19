@@ -7,6 +7,9 @@ import { SignUpResponseDto } from './dtos/responses/sign-up.response.dto';
 import { SignInResponseDto } from './dtos/responses/sign-in.response.dto';
 import { VerifyEmailRequestDto } from './dtos/requests/verify-email.request.dto';
 import { UserResponseDto } from '../users/dtos/responses/user.response.dto';
+import { Roles } from './decorators/roles.decorator';
+import { ERole } from 'src/common/enums/role.enum';
+import { User } from '../users/decorators/user.decorator';
 
 @Controller('auth')
 export class AuthController {
@@ -40,6 +43,15 @@ export class AuthController {
   @Post('verify-email')
   @HttpCode(HttpStatus.OK)
   async verifyEmail(@Body() body: VerifyEmailRequestDto) {
-    return await this.authService.verifyEmail(body);
+    await this.authService.verifyEmail(body);
+    return {};
+  }
+
+  @Roles(ERole.USER)
+  @Post('send-verification-email')
+  @HttpCode(HttpStatus.OK)
+  async sendVerificationEmail(@User('sub') userId: string) {
+    await this.authService.sendVerificationEmail(userId);
+    return {};
   }
 }

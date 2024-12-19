@@ -5,14 +5,16 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { S3Service } from 'src/lib/s3/s3.service';
+import { IsNull, Like, Repository } from 'typeorm';
+
+import { PgErrorCode } from 'src/common/constants';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { ERole } from 'src/common/enums/role.enum';
 import { User } from 'src/repositories/entities';
-import { IsNull, Like, Repository } from 'typeorm';
 import { HashingService } from '../auth/hashing/hashing.service';
 import { CreateUserRequestDto } from './dtos/requests/create-user.request.dto';
 import { UpdateUserRequestDto } from './dtos/requests/update-user.request.dto';
-import { PgErrorCode } from 'src/common/constants/pg-error-code.constant';
 
 @Injectable()
 export class UsersService {
@@ -20,6 +22,7 @@ export class UsersService {
     @InjectRepository(User)
     private readonly usersRepository: Repository<User>,
     private readonly hashingService: HashingService,
+    private readonly s3Service: S3Service,
   ) {}
 
   async findOneById(id: string): Promise<User> {
@@ -113,8 +116,32 @@ export class UsersService {
     try {
       await this.usersRepository.softDelete(id);
       return;
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Failed to delete user');
     }
+  }
+
+  async changeAvatar(
+    userId: string,
+    avatar: Express.Multer.File,
+  ): Promise<Record<string, never>> {
+    const user = await this.findOneById(userId);
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (!avatar) {
+      throw new BadRequestException('Avatar is required');
+    }
+
+    const key = await this.s3Service.uploadFile(
+      avatar.originalname,
+      avatar.buffer,
+    );
+    const url = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+
+    user.avatar = url;
+    await this.usersRepository.save(user);
+    return {};
   }
 }

@@ -1,0 +1,7 @@
+export enum EPostStatus {
+  REVIEWING = 'REVIEWING',
+  APPROVED = 'APPROVED',
+  REJECTED = 'REJECTED',
+  PUBLISHED = 'PUBLISHED',
+  CLOSED = 'CLOSED',
+}

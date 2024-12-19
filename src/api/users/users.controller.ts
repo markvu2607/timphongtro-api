@@ -9,6 +9,8 @@ import {
   Patch,
   Post,
   Query,
+  UploadedFiles,
+  UseInterceptors,
 } from '@nestjs/common';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { ERole } from 'src/common/enums/role.enum';
@@ -19,6 +21,8 @@ import { UserResponseDto } from './dtos/responses/user.response.dto';
 import { UsersService } from './users.service';
 import { UpdateUserRequestDto } from './dtos/requests/update-user.request.dto';
 import { CreateUserRequestDto } from './dtos/requests/create-user.request.dto';
+import { FilesInterceptor } from '@nestjs/platform-express';
+import { MAX_FILE_SIZE } from 'src/common/constants';
 
 @Controller('users')
 export class UsersController {
@@ -39,6 +43,22 @@ export class UsersController {
   ): Promise<UserResponseDto> {
     const updatedUser = await this.usersService.update(userId, user);
     return new UserResponseDto(updatedUser);
+  }
+
+  @Patch('me/avatar')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(
+    FilesInterceptor('avatar', 1, {
+      limits: {
+        fileSize: MAX_FILE_SIZE,
+      },
+    }),
+  )
+  async changeAvatar(
+    @User('sub') userId: string,
+    @UploadedFiles() avatar: Express.Multer.File[],
+  ): Promise<void> {
+    return await this.usersService.changeAvatar(userId, avatar[0]);
   }
 
   @Roles(ERole.ADMIN)

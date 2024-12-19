@@ -6,7 +6,7 @@ export class UserResponseDto {
   public name: string;
   public phone: string;
   public isVerified: boolean;
-  public avatar: string;
+  public avatar: string | null;
 
   constructor(user: User) {
     this.id = user.id;
