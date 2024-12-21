@@ -4,8 +4,13 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import { IsNull, Repository } from 'typeorm';
+
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
+import { EPostStatus } from 'src/common/enums/post-status.enum';
+import { ERole } from 'src/common/enums/role.enum';
 import { S3Service } from 'src/lib/s3/s3.service';
 import {
   District,
@@ -14,11 +19,8 @@ import {
   Province,
   User,
 } from 'src/repositories/entities';
-import { IsNull, Repository } from 'typeorm';
 import { CreatePostRequestDto } from './dtos/requests/create-post.request.dto';
 import { UpdatePostRequestDto } from './dtos/requests/update-post.request.dto';
-import { ERole } from 'src/common/enums/role.enum';
-import { EPostStatus } from 'src/common/enums/post-status.enum';
 
 @Injectable()
 export class PostsService {
@@ -34,6 +36,7 @@ export class PostsService {
     @InjectRepository(Province)
     private readonly provincesRepository: Repository<Province>,
     private readonly s3Service: S3Service,
+    private readonly configService: ConfigService,
   ) {}
 
   async getPosts(
@@ -267,7 +270,7 @@ export class PostsService {
 
     try {
       return await this.postsRepository.save(updatedPost);
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Failed to update post');
     }
   }
@@ -293,7 +296,7 @@ export class PostsService {
       );
       await this.postsRepository.softDelete(id);
       return;
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Failed to delete post');
     }
   }
@@ -378,5 +381,22 @@ export class PostsService {
 
     post.status = EPostStatus.REJECTED;
     return await this.postsRepository.save(post);
+  }
+
+  async getPostListByIds(ids: string[]): Promise<Post[]> {
+    const postList = await Promise.allSettled(
+      ids.map(async (id) => {
+        return await this.getPostById(id);
+      }),
+    );
+
+    const availablePosts = postList
+      .filter(
+        (result): result is PromiseFulfilledResult<Post> =>
+          result.status === 'fulfilled' && result.value !== null,
+      )
+      .map((result) => result.value);
+
+    return availablePosts;
   }
 }

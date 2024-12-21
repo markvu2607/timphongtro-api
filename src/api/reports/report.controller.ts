@@ -7,7 +7,6 @@ import {
   HttpStatus,
   Param,
   Post,
-  Put,
   Query,
 } from '@nestjs/common';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
@@ -15,7 +14,6 @@ import { ERole } from 'src/common/enums/role.enum';
 import { Public } from '../auth/decorators/public.decorator';
 import { Roles } from '../auth/decorators/roles.decorator';
 import { CreateReportRequestDto } from './dtos/requests/create-report.request.dto';
-import { UpdateReportRequestDto } from './dtos/requests/update-report.request.dto';
 import { PaginatedReportsResponseDto } from './dtos/responses/get-reports.response.dto';
 import { ReportResponseDto } from './dtos/responses/report.response.dto';
 import { ReportService } from './report.service';
@@ -60,20 +58,25 @@ export class ReportController {
   }
 
   @Roles(ERole.ADMIN)
-  @Put(':id')
+  @Delete(':id')
   @HttpCode(HttpStatus.OK)
-  async update(
-    @Param('id') id: string,
-    @Body() updateReportRequestDto: UpdateReportRequestDto,
-  ): Promise<ReportResponseDto> {
-    const report = await this.reportService.update(id, updateReportRequestDto);
-    return new ReportResponseDto(report);
+  async delete(@Param('id') id: string) {
+    return await this.reportService.delete(id);
   }
 
   @Roles(ERole.ADMIN)
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  async delete(@Param('id') id: string) {
-    return await this.reportService.delete(id);
+  @Post(':id/resolve')
+  @HttpCode(HttpStatus.OK)
+  async resolve(@Param('id') id: string) {
+    await this.reportService.resolve(id);
+    return {};
+  }
+
+  @Roles(ERole.ADMIN)
+  @Post(':id/reject')
+  @HttpCode(HttpStatus.OK)
+  async reject(@Param('id') id: string) {
+    await this.reportService.reject(id);
+    return {};
   }
 }

@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsString, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsPhoneNumber, IsString, IsUUID } from 'class-validator';
 
 export class CreateReportRequestDto {
   @IsNotEmpty()
@@ -7,6 +7,14 @@ export class CreateReportRequestDto {
 
   @IsString()
   description: string;
+
+  @IsNotEmpty()
+  @IsString()
+  name: string;
+
+  @IsNotEmpty()
+  @IsPhoneNumber('VN')
+  phone: string;
 
   @IsNotEmpty()
   @IsString()

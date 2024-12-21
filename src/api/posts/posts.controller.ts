@@ -64,6 +64,16 @@ export class PostsController {
   }
 
   @Public()
+  @Get('list')
+  @HttpCode(HttpStatus.OK)
+  async getPostListByIds(
+    @Query('ids', { transform: (value) => value.split(',') }) ids: string[],
+  ) {
+    const postList = await this.postsService.getPostListByIds(ids);
+    return postList.map((post) => new PostResponseDto(post));
+  }
+
+  @Public()
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async getPostById(@Param('id') id: string) {

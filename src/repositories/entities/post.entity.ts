@@ -31,6 +31,12 @@ export class Post {
   @Column({ length: 255 })
   address: string;
 
+  @Column()
+  area: number;
+
+  @Column()
+  price: number;
+
   @Column({ type: 'float' })
   longitude: number;
 

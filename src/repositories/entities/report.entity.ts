@@ -23,6 +23,12 @@ export class Report {
   @Column({ type: 'text' })
   description: string;
 
+  @Column({ length: 255 })
+  name: string;
+
+  @Column({ length: 255 })
+  phone: string;
+
   @Column({
     type: 'enum',
     enum: EReportStatus,

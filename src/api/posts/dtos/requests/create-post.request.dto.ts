@@ -21,4 +21,10 @@ export class CreatePostRequestDto {
 
   @IsNotEmpty()
   provinceId: string;
+
+  @IsNotEmpty()
+  price: number;
+
+  @IsNotEmpty()
+  area: number;
 }

@@ -9,8 +9,11 @@ export class PostResponseDto {
   public title: string;
   public description: string;
   public createdAt: Date;
+  public publishedAt: Date;
   public thumbnail: string;
   public address: string;
+  public price: number;
+  public area: number;
   public longitude: number;
   public latitude: number;
   public status: string;
@@ -24,8 +27,11 @@ export class PostResponseDto {
     this.title = post.title;
     this.description = post.description;
     this.createdAt = post.createdAt;
+    this.publishedAt = post.publishedAt;
     this.thumbnail = post.thumbnail;
     this.address = post.address;
+    this.price = post.price;
+    this.area = post.area;
     this.longitude = post.longitude;
     this.latitude = post.latitude;
     this.status = post.status;

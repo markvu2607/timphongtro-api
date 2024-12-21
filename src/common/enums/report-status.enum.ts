@@ -1,5 +1,5 @@
 export enum EReportStatus {
   PENDING = 'PENDING',
-  APPROVED = 'APPROVED',
+  RESOLVED = 'RESOLVED',
   REJECTED = 'REJECTED',
 }
