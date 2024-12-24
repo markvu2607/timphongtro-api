@@ -19,6 +19,7 @@ import {
   User,
 } from 'src/repositories/entities';
 import { CreatePostRequestDto } from './dtos/requests/create-post.request.dto';
+import { GetPostsQueryParamsRequestDto } from './dtos/requests/get-posts-query-params.request.dto';
 import { UpdatePostRequestDto } from './dtos/requests/update-post.request.dto';
 
 @Injectable()
@@ -65,9 +66,21 @@ export class PostsService {
   }
 
   async getPublishedPosts(
-    query: PaginationRequestDto,
+    query: GetPostsQueryParamsRequestDto,
   ): Promise<{ posts: Post[]; total: number; page: number; limit: number }> {
-    const { page, limit, search, sortBy, sortOrder } = query;
+    const {
+      page,
+      limit,
+      search,
+      sortBy,
+      sortOrder,
+      provinceId,
+      districtId,
+      minPrice,
+      maxPrice,
+      minArea,
+      maxArea,
+    } = query;
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.postsRepository.createQueryBuilder('post');
@@ -77,13 +90,41 @@ export class PostsService {
     });
 
     if (search) {
-      queryBuilder.where('post.title LIKE :search', { search: `%${search}%` });
+      queryBuilder.andWhere('post.title LIKE :search', {
+        search: `%${search}%`,
+      });
+    }
+
+    if (minPrice) {
+      queryBuilder.andWhere('post.price >= :minPrice', { minPrice });
+    }
+
+    if (maxPrice) {
+      queryBuilder.andWhere('post.price <= :maxPrice', { maxPrice });
+    }
+
+    if (minArea) {
+      queryBuilder.andWhere('post.area >= :minArea', { minArea });
+    }
+
+    if (maxArea) {
+      queryBuilder.andWhere('post.area <= :maxArea', { maxArea });
+    }
+
+    queryBuilder
+      .leftJoinAndSelect('post.district', 'district')
+      .leftJoinAndSelect('post.province', 'province');
+
+    if (provinceId) {
+      queryBuilder.andWhere('post.province.id = :provinceId', { provinceId });
+    }
+
+    if (districtId) {
+      queryBuilder.andWhere('post.district.id = :districtId', { districtId });
     }
 
     queryBuilder
       .leftJoinAndSelect('post.user', 'user')
-      .leftJoinAndSelect('post.district', 'district')
-      .leftJoinAndSelect('post.province', 'province')
       .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy(`post.${sortBy}`, sortOrder)
       .skip(skip)

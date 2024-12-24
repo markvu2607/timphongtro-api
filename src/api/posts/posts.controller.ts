@@ -25,6 +25,7 @@ import { UpdatePostRequestDto } from './dtos/requests/update-post.request.dto';
 import { PaginatedPostsResponseDto } from './dtos/responses/get-posts.response.dto';
 import { PostResponseDto } from './dtos/responses/post.response.dto';
 import { PostsService } from './posts.service';
+import { GetPostsQueryParamsRequestDto } from './dtos/requests/get-posts-query-params.request.dto';
 
 @Controller('posts')
 export class PostsController {
@@ -33,7 +34,7 @@ export class PostsController {
   @Public()
   @Get('published')
   @HttpCode(HttpStatus.OK)
-  async getPublishedPosts(@Query() query: PaginationRequestDto) {
+  async getPublishedPosts(@Query() query: GetPostsQueryParamsRequestDto) {
     const { posts, total, page, limit } =
       await this.postsService.getPublishedPosts(query);
 
