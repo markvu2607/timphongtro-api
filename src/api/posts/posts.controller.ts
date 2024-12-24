@@ -70,7 +70,6 @@ export class PostsController {
     @User('sub') ownerId: string,
     @Query() query: PaginationRequestDto,
   ) {
-    console.log('here');
     const { posts, total, page, limit } =
       await this.postsService.getPostsByOwnerId(ownerId, query);
 

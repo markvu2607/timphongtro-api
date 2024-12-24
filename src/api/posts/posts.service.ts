@@ -194,7 +194,6 @@ export class PostsService {
   }
 
   async getPublishedPostById(id: string): Promise<Post> {
-    console.log(id);
     const post = await this.postsRepository.findOne({
       where: { id },
       relations: ['user', 'district', 'province', 'postImages'],
