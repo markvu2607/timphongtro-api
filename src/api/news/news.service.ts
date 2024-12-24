@@ -33,8 +33,6 @@ export class NewsService {
 
     const queryBuilder = this.newsRepository.createQueryBuilder('news');
 
-    queryBuilder.where('news.deletedAt IS NULL');
-
     if (search) {
       queryBuilder.where('news.title LIKE :search', {
         search: `%${search}%`,
@@ -114,7 +112,7 @@ export class NewsService {
         province,
       });
       return this.findOneById(id);
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('Failed to update news');
     }
   }
@@ -126,9 +124,9 @@ export class NewsService {
     }
 
     try {
-      await this.newsRepository.softDelete(id);
+      await this.newsRepository.delete(id);
       return;
-    } catch (error) {
+    } catch {
       throw new BadRequestException('Cannot delete news');
     }
   }

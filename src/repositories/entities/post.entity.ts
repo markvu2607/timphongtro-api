@@ -1,8 +1,6 @@
-import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -10,6 +8,7 @@ import {
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { District, Province, Report, User } from '.';
 import { PostImage } from './post-images.entity';
 import { EPostStatus } from 'src/common/enums/post-status.enum';
@@ -68,14 +67,8 @@ export class Post {
   publishedAt: Date;
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  @Exclude()
-  deletedAt: Date;
 }

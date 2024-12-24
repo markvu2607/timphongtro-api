@@ -5,11 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
-import { IsNull, Repository } from 'typeorm';
+import { District, Post, Province } from 'src/repositories/entities';
 import { CreateDistrictRequestDto } from './dtos/requests/create-district.request.dto';
 import { UpdateDistrictRequestDto } from './dtos/requests/update-district.request.dto';
-import { District, Province, Post } from 'src/repositories/entities';
 
 @Injectable()
 export class DistrictsService {
@@ -34,8 +35,6 @@ export class DistrictsService {
     const queryBuilder =
       this.districtsRepository.createQueryBuilder('district');
 
-    queryBuilder.where('district.deletedAt IS NULL');
-
     if (search) {
       queryBuilder.where('district.name LIKE :search', {
         search: `%${search}%`,
@@ -53,7 +52,10 @@ export class DistrictsService {
   }
 
   async findAllWithoutPagination(): Promise<District[]> {
-    return this.districtsRepository.find({ where: { deletedAt: IsNull() } });
+    return this.districtsRepository.find({
+      relations: ['province'],
+      order: { name: 'ASC' },
+    });
   }
 
   async findOneById(id: string): Promise<District> {
@@ -61,7 +63,6 @@ export class DistrictsService {
       .createQueryBuilder('district')
       .leftJoinAndSelect('district.province', 'province')
       .where('district.id = :id', { id })
-      .andWhere('district.deletedAt IS NULL')
       .getOne();
     if (!district) {
       throw new NotFoundException('District not found');
@@ -75,7 +76,7 @@ export class DistrictsService {
     const { provinceId, ...rest } = createDistrictRequestDto;
 
     const province = await this.provincesRepository.findOne({
-      where: { id: provinceId, deletedAt: IsNull() },
+      where: { id: provinceId },
     });
     if (!province) {
       throw new NotFoundException('Province not found');
@@ -87,7 +88,7 @@ export class DistrictsService {
         province,
       });
       return this.districtsRepository.save(newDistrict);
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('Failed to create district');
     }
   }
@@ -106,7 +107,7 @@ export class DistrictsService {
     let province = district.province;
     if (provinceId) {
       province = await this.provincesRepository.findOne({
-        where: { id: provinceId, deletedAt: IsNull() },
+        where: { id: provinceId },
       });
       if (!province) {
         throw new NotFoundException('Province not found');
@@ -119,7 +120,7 @@ export class DistrictsService {
         province,
       });
       return this.findOneById(id);
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('Failed to update district');
     }
   }
@@ -131,16 +132,16 @@ export class DistrictsService {
     }
 
     const posts = await this.postsRepository.find({
-      where: { district: { id }, deletedAt: IsNull() },
+      where: { district: { id } },
     });
     if (posts.length > 0) {
       throw new BadRequestException('Cannot delete district with posts');
     }
 
     try {
-      await this.districtsRepository.softDelete(id);
+      await this.districtsRepository.delete(id);
       return;
-    } catch (error) {
+    } catch {
       throw new InternalServerErrorException('Failed to delete district');
     }
   }

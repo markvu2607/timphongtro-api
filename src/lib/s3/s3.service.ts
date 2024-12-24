@@ -1,7 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-
+import {
+  S3Client,
+  PutObjectCommand,
+  DeleteObjectCommand,
+} from '@aws-sdk/client-s3';
 import { v4 as uuidv4 } from 'uuid';
 
 @Injectable()
@@ -56,6 +59,20 @@ export class S3Service {
       return key;
     } catch (error) {
       console.error('Error uploading file:', error);
+      throw error;
+    }
+  }
+
+  async deleteFile(key: string) {
+    const command = new DeleteObjectCommand({
+      Bucket: this.configService.get<string>('aws.s3.bucketName'),
+      Key: key,
+    });
+
+    try {
+      await this.s3Client.send(command);
+    } catch (error) {
+      console.error('Error deleting file:', error);
       throw error;
     }
   }

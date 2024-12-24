@@ -1,8 +1,6 @@
-import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -33,14 +31,8 @@ export class News {
   province: Province;
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  @Exclude()
-  deletedAt: Date;
 }

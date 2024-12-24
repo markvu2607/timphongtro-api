@@ -1,8 +1,6 @@
-import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
@@ -27,14 +25,8 @@ export class PostImage {
   post: Post;
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  @Exclude()
-  deletedAt: Date;
 }

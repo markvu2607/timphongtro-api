@@ -31,11 +31,11 @@ export class PostsController {
   constructor(private readonly postsService: PostsService) {}
 
   @Public()
-  @Get()
+  @Get('published')
   @HttpCode(HttpStatus.OK)
-  async getPosts(@Query() query: PaginationRequestDto) {
+  async getPublishedPosts(@Query() query: PaginationRequestDto) {
     const { posts, total, page, limit } =
-      await this.postsService.getPosts(query);
+      await this.postsService.getPublishedPosts(query);
 
     return new PaginatedPostsResponseDto({
       items: posts.map((post) => new PostResponseDto(post)),
@@ -43,17 +43,36 @@ export class PostsController {
       page,
       limit,
     });
+  }
+
+  @Public()
+  @Get('published/list')
+  @HttpCode(HttpStatus.OK)
+  async getPublishedPostListByIds(
+    @Query('ids', { transform: (value) => value.split(',') }) ids: string[],
+  ) {
+    const postList = await this.postsService.getPublishedPostListByIds(ids);
+    return postList.map((post) => new PostResponseDto(post));
+  }
+
+  @Public()
+  @Get('published/:id')
+  @HttpCode(HttpStatus.OK)
+  async getPublishedPostById(@Param('id') id: string) {
+    const post = await this.postsService.getPublishedPostById(id);
+    return new PostResponseDto(post);
   }
 
   @Roles(ERole.USER)
   @Get('mine')
   @HttpCode(HttpStatus.OK)
   async getPostsByOwnerId(
-    @User('sub') userId: string,
+    @User('sub') ownerId: string,
     @Query() query: PaginationRequestDto,
   ) {
+    console.log('here');
     const { posts, total, page, limit } =
-      await this.postsService.getPostsByOwnerId(userId, query);
+      await this.postsService.getPostsByOwnerId(ownerId, query);
 
     return new PaginatedPostsResponseDto({
       items: posts.map((post) => new PostResponseDto(post)),
@@ -63,26 +82,19 @@ export class PostsController {
     });
   }
 
-  @Public()
-  @Get('list')
+  @Roles(ERole.USER)
+  @Get('mine/:id')
   @HttpCode(HttpStatus.OK)
-  async getPostListByIds(
-    @Query('ids', { transform: (value) => value.split(',') }) ids: string[],
+  async getPostByIdAndOwnerId(
+    @User('sub') ownerId: string,
+    @Param('id') id: string,
   ) {
-    const postList = await this.postsService.getPostListByIds(ids);
-    return postList.map((post) => new PostResponseDto(post));
-  }
-
-  @Public()
-  @Get(':id')
-  @HttpCode(HttpStatus.OK)
-  async getPostById(@Param('id') id: string) {
-    const post = await this.postsService.getPostById(id);
+    const post = await this.postsService.getPostByIdAndOwnerId(ownerId, id);
     return new PostResponseDto(post);
   }
 
   @Roles(ERole.USER)
-  @Post()
+  @Post('mine')
   @HttpCode(HttpStatus.CREATED)
   @UseInterceptors(
     FilesInterceptor('postImages', 10, {
@@ -106,7 +118,7 @@ export class PostsController {
   }
 
   @Roles(ERole.USER)
-  @Patch(':id')
+  @Patch('mine/:id')
   @HttpCode(HttpStatus.OK)
   @UseInterceptors(
     FilesInterceptor('postImages', 10, {
@@ -131,27 +143,58 @@ export class PostsController {
     return new PostResponseDto(post);
   }
 
-  @Delete(':id')
+  @Roles(ERole.USER)
+  @Delete('mine/:id')
   @HttpCode(HttpStatus.NO_CONTENT)
-  async deletePost(
-    @User() user: { sub: string; role: ERole },
+  async deletePostByOwnerId(
+    @User('sub') ownerId: string,
     @Param('id') id: string,
   ) {
-    return await this.postsService.deletePost(user, id);
+    return await this.postsService.deletePostByOwnerId(ownerId, id);
   }
 
   @Roles(ERole.USER)
-  @Post(':id/publish')
+  @Post('mine/:id/publish')
   @HttpCode(HttpStatus.OK)
   async publishPost(@User('sub') userId: string, @Param('id') id: string) {
     return await this.postsService.publishPost(userId, id);
   }
 
   @Roles(ERole.USER)
-  @Post(':id/close')
+  @Post('mine/:id/close')
   @HttpCode(HttpStatus.OK)
   async closePost(@User('sub') userId: string, @Param('id') id: string) {
     return await this.postsService.closePost(userId, id);
+  }
+
+  @Roles(ERole.ADMIN)
+  @Get()
+  @HttpCode(HttpStatus.OK)
+  async getPosts(@Query() query: PaginationRequestDto) {
+    const { posts, total, page, limit } =
+      await this.postsService.getPosts(query);
+
+    return new PaginatedPostsResponseDto({
+      items: posts.map((post) => new PostResponseDto(post)),
+      total,
+      page,
+      limit,
+    });
+  }
+
+  @Roles(ERole.ADMIN)
+  @Get(':id')
+  @HttpCode(HttpStatus.OK)
+  async getPostById(@Param('id') id: string) {
+    const post = await this.postsService.getPostById(id);
+    return new PostResponseDto(post);
+  }
+
+  @Roles(ERole.ADMIN)
+  @Delete(':id')
+  @HttpCode(HttpStatus.OK)
+  async deletePost(@Param('id') id: string) {
+    return await this.postsService.deletePost(id);
   }
 
   @Roles(ERole.ADMIN)

@@ -1,13 +1,12 @@
-import { Exclude } from 'class-transformer';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   OneToMany,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
 import { District, News, Post } from '.';
 
 @Entity('provinces')
@@ -28,14 +27,8 @@ export class Province {
   news: News[];
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  @Exclude()
-  deletedAt: Date;
 }

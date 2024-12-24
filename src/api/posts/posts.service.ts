@@ -6,11 +6,10 @@ import {
 } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
-import { IsNull, Repository } from 'typeorm';
+import { Repository } from 'typeorm';
 
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { EPostStatus } from 'src/common/enums/post-status.enum';
-import { ERole } from 'src/common/enums/role.enum';
 import { S3Service } from 'src/lib/s3/s3.service';
 import {
   District,
@@ -47,7 +46,35 @@ export class PostsService {
 
     const queryBuilder = this.postsRepository.createQueryBuilder('post');
 
-    queryBuilder.where('post.deletedAt IS NULL');
+    if (search) {
+      queryBuilder.where('post.title LIKE :search', { search: `%${search}%` });
+    }
+
+    queryBuilder
+      .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.district', 'district')
+      .leftJoinAndSelect('post.province', 'province')
+      .leftJoinAndSelect('post.postImages', 'postImages')
+      .orderBy(`post.${sortBy}`, sortOrder)
+      .skip(skip)
+      .take(limit);
+
+    const [posts, total] = await queryBuilder.getManyAndCount();
+
+    return { posts, total, page, limit };
+  }
+
+  async getPublishedPosts(
+    query: PaginationRequestDto,
+  ): Promise<{ posts: Post[]; total: number; page: number; limit: number }> {
+    const { page, limit, search, sortBy, sortOrder } = query;
+    const skip = (page - 1) * limit;
+
+    const queryBuilder = this.postsRepository.createQueryBuilder('post');
+
+    queryBuilder.where('post.status = :status', {
+      status: EPostStatus.PUBLISHED,
+    });
 
     if (search) {
       queryBuilder.where('post.title LIKE :search', { search: `%${search}%` });
@@ -57,11 +84,7 @@ export class PostsService {
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('post.district', 'district')
       .leftJoinAndSelect('post.province', 'province')
-      .leftJoinAndSelect(
-        'post.postImages',
-        'postImages',
-        'postImages.deletedAt IS NOT NULL',
-      )
+      .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy(`post.${sortBy}`, sortOrder)
       .skip(skip)
       .take(limit);
@@ -72,11 +95,11 @@ export class PostsService {
   }
 
   async getPostsByOwnerId(
-    userId: string,
+    ownerId: string,
     query: PaginationRequestDto,
   ): Promise<{ posts: Post[]; total: number; page: number; limit: number }> {
     const user = await this.usersRepository.findOne({
-      where: { id: userId, deletedAt: IsNull() },
+      where: { id: ownerId },
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -91,9 +114,8 @@ export class PostsService {
     const queryBuilder = this.postsRepository.createQueryBuilder('post');
 
     queryBuilder
-      .where('post.deletedAt IS NULL')
       .leftJoinAndSelect('post.user', 'user')
-      .andWhere('post.user.id = :userId', { userId });
+      .andWhere('post.user.id = :ownerId', { ownerId });
 
     if (search) {
       queryBuilder.andWhere('post.title LIKE :search', {
@@ -104,11 +126,7 @@ export class PostsService {
     queryBuilder
       .leftJoinAndSelect('post.district', 'district')
       .leftJoinAndSelect('post.province', 'province')
-      .leftJoinAndSelect(
-        'post.postImages',
-        'postImages',
-        'postImages.deletedAt IS NOT NULL',
-      )
+      .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy(`post.${sortBy}`, sortOrder)
       .skip(skip)
       .take(limit);
@@ -118,9 +136,36 @@ export class PostsService {
     return { posts, total, page, limit };
   }
 
+  async deletePost(id: string) {
+    const post = await this.getPostById(id);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    try {
+      const postImages = await this.postImagesRepository.find({
+        where: { post: { id } },
+      });
+      await Promise.all(
+        postImages.map(async (image) => {
+          this.s3Service.deleteFile(image.key);
+        }),
+      );
+      await Promise.all(
+        postImages.map(async (image) => {
+          await this.postImagesRepository.delete(image.id);
+        }),
+      );
+      await this.postsRepository.delete(id);
+      return;
+    } catch {
+      throw new BadRequestException('Failed to delete post');
+    }
+  }
+
   async getPostById(id: string): Promise<Post> {
     const post = await this.postsRepository.findOne({
-      where: { id, deletedAt: IsNull() },
+      where: { id },
       relations: ['user', 'district', 'province', 'postImages'],
     });
 
@@ -128,6 +173,38 @@ export class PostsService {
       throw new NotFoundException('Post not found');
     }
 
+    return post;
+  }
+
+  async getPostByIdAndOwnerId(ownerId: string, id: string): Promise<Post> {
+    const post = await this.postsRepository.findOne({
+      where: { id },
+      relations: ['user', 'district', 'province', 'postImages'],
+    });
+
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.user.id !== ownerId) {
+      throw new ForbiddenException('You are not allowed to view this post');
+    }
+
+    return post;
+  }
+
+  async getPublishedPostById(id: string): Promise<Post> {
+    console.log(id);
+    const post = await this.postsRepository.findOne({
+      where: { id },
+      relations: ['user', 'district', 'province', 'postImages'],
+    });
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+    if (post.status !== EPostStatus.PUBLISHED) {
+      throw new BadRequestException('Post not found');
+    }
     return post;
   }
 
@@ -143,21 +220,21 @@ export class PostsService {
     }
 
     const user = await this.usersRepository.findOne({
-      where: { id: userId, deletedAt: IsNull() },
+      where: { id: userId },
     });
     if (!user) {
       throw new NotFoundException('User not found');
     }
 
     const district = await this.districtsRepository.findOne({
-      where: { id: districtId, deletedAt: IsNull() },
+      where: { id: districtId },
     });
     if (!district) {
       throw new NotFoundException('District not found');
     }
 
     const province = await this.provincesRepository.findOne({
-      where: { id: provinceId, deletedAt: IsNull() },
+      where: { id: provinceId },
     });
     if (!province) {
       throw new NotFoundException('Province not found');
@@ -211,14 +288,14 @@ export class PostsService {
     }
 
     const district = await this.districtsRepository.findOne({
-      where: { id: districtId, deletedAt: IsNull() },
+      where: { id: districtId },
     });
     if (!district) {
       throw new NotFoundException('District not found');
     }
 
     const province = await this.provincesRepository.findOne({
-      where: { id: provinceId, deletedAt: IsNull() },
+      where: { id: provinceId },
     });
     if (!province) {
       throw new NotFoundException('Province not found');
@@ -234,7 +311,12 @@ export class PostsService {
 
     await Promise.all(
       shouldRemovePostImages.map(async (image) => {
-        await this.postImagesRepository.softDelete(image.id);
+        await this.s3Service.deleteFile(image.key);
+      }),
+    );
+    await Promise.all(
+      shouldRemovePostImages.map(async (image) => {
+        await this.postImagesRepository.delete(image.id);
       }),
     );
 
@@ -275,26 +357,31 @@ export class PostsService {
     }
   }
 
-  async deletePost(user: { sub: string; role: ERole }, id: string) {
+  async deletePostByOwnerId(ownerId: string, id: string) {
     const post = await this.getPostById(id);
     if (!post) {
       throw new NotFoundException('Post not found');
     }
 
-    if (post.user.id !== user.sub && user.role !== ERole.ADMIN) {
+    if (post.user.id !== ownerId) {
       throw new ForbiddenException('You are not allowed to delete this post');
     }
 
     try {
       const postImages = await this.postImagesRepository.find({
-        where: { post: { id }, deletedAt: IsNull() },
+        where: { post: { id } },
       });
       await Promise.all(
         postImages.map(async (image) => {
-          await this.postImagesRepository.softDelete(image.id);
+          this.s3Service.deleteFile(image.key);
         }),
       );
-      await this.postsRepository.softDelete(id);
+      await Promise.all(
+        postImages.map(async (image) => {
+          await this.postImagesRepository.delete(image.id);
+        }),
+      );
+      await this.postsRepository.delete(id);
       return;
     } catch {
       throw new BadRequestException('Failed to delete post');
@@ -383,10 +470,10 @@ export class PostsService {
     return await this.postsRepository.save(post);
   }
 
-  async getPostListByIds(ids: string[]): Promise<Post[]> {
+  async getPublishedPostListByIds(ids: string[]): Promise<Post[]> {
     const postList = await Promise.allSettled(
       ids.map(async (id) => {
-        return await this.getPostById(id);
+        return await this.getPublishedPostById(id);
       }),
     );
 

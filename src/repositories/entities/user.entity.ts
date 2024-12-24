@@ -1,14 +1,13 @@
-import { Exclude } from 'class-transformer';
 import { IsEmail, IsOptional } from 'class-validator';
-import { ERole } from 'src/common/enums/role.enum';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { ERole } from 'src/common/enums/role.enum';
 
 @Entity('users')
 export class User {
@@ -39,23 +38,15 @@ export class User {
 
   @Column({ default: null })
   @IsOptional()
-  @Exclude()
   verificationToken: string;
 
   @Column({ default: null })
   @IsOptional()
-  @Exclude()
   tokenExpiration: Date;
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  @Exclude()
-  deletedAt: Date;
 }

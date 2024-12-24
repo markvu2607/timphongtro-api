@@ -5,12 +5,12 @@ import {
   NotFoundException,
 } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { S3Service } from 'src/lib/s3/s3.service';
-import { IsNull, Like, Repository } from 'typeorm';
+import { Like, Repository } from 'typeorm';
 
 import { PgErrorCode } from 'src/common/constants';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
 import { ERole } from 'src/common/enums/role.enum';
+import { S3Service } from 'src/lib/s3/s3.service';
 import { User } from 'src/repositories/entities';
 import { HashingService } from '../auth/hashing/hashing.service';
 import { CreateUserRequestDto } from './dtos/requests/create-user.request.dto';
@@ -27,7 +27,7 @@ export class UsersService {
 
   async findOneById(id: string): Promise<User> {
     const user = await this.usersRepository.findOne({
-      where: { id: id, deletedAt: IsNull() },
+      where: { id },
     });
     if (!user) {
       throw new NotFoundException('User not found');
@@ -46,8 +46,6 @@ export class UsersService {
     const skip = (page - 1) * limit;
 
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
-
-    queryBuilder.where('user.deletedAt IS NULL');
 
     if (search) {
       queryBuilder.where([
@@ -114,7 +112,7 @@ export class UsersService {
     }
 
     try {
-      await this.usersRepository.softDelete(id);
+      await this.usersRepository.delete(id);
       return;
     } catch {
       throw new BadRequestException('Failed to delete user');

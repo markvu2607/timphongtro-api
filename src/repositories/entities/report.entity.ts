@@ -1,15 +1,14 @@
-import { Exclude } from 'class-transformer';
-import { EReportStatus } from 'src/common/enums/report-status.enum';
 import {
   Column,
   CreateDateColumn,
-  DeleteDateColumn,
   Entity,
   JoinColumn,
   ManyToOne,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
+
+import { EReportStatus } from 'src/common/enums/report-status.enum';
 import { Post } from '.';
 
 @Entity('reports')
@@ -41,14 +40,8 @@ export class Report {
   post: Post;
 
   @CreateDateColumn()
-  @Exclude()
   createdAt: Date;
 
   @UpdateDateColumn()
-  @Exclude()
   updatedAt: Date;
-
-  @DeleteDateColumn()
-  @Exclude()
-  deletedAt: Date;
 }
