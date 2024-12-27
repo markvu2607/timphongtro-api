@@ -9,9 +9,8 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 
-import { District, Province, Report, User } from '.';
-import { PostImage } from './post-images.entity';
 import { EPostStatus } from 'src/common/enums/post-status.enum';
+import { District, PaymentPackage, Province, Report, User, PostImage } from '.';
 
 @Entity('posts')
 export class Post {
@@ -62,6 +61,10 @@ export class Post {
   @ManyToOne(() => User, (user) => user.id)
   @JoinColumn({ name: 'user_id' })
   user: User;
+
+  @ManyToOne(() => PaymentPackage, (paymentPackage) => paymentPackage.id)
+  @JoinColumn({ name: 'payment_package_id' })
+  paymentPackage: PaymentPackage;
 
   @Column({ type: 'timestamp', default: null, nullable: true })
   publishedAt: Date;

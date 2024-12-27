@@ -26,6 +26,7 @@ import { PaginatedPostsResponseDto } from './dtos/responses/get-posts.response.d
 import { PostResponseDto } from './dtos/responses/post.response.dto';
 import { PostsService } from './posts.service';
 import { GetPostsQueryParamsRequestDto } from './dtos/requests/get-posts-query-params.request.dto';
+import { isStripeCheckoutSession } from 'src/common/utils/types-predicate';
 
 @Controller('posts')
 export class PostsController {
@@ -157,7 +158,12 @@ export class PostsController {
   @Post('mine/:id/publish')
   @HttpCode(HttpStatus.OK)
   async publishPost(@User('sub') userId: string, @Param('id') id: string) {
-    return await this.postsService.publishPost(userId, id);
+    const result = await this.postsService.publishPost(userId, id);
+    if (isStripeCheckoutSession(result)) {
+      return { redirectUrl: result.url };
+    } else {
+      return new PostResponseDto(result);
+    }
   }
 
   @Roles(ERole.USER)

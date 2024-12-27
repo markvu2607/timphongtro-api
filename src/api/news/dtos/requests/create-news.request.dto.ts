@@ -1,4 +1,4 @@
-import { IsNotEmpty, IsUUID } from 'class-validator';
+import { IsNotEmpty, IsOptional } from 'class-validator';
 
 import { IsString } from 'class-validator';
 
@@ -15,7 +15,7 @@ export class CreateNewsRequestDto {
   @IsNotEmpty()
   content: string;
 
-  @IsUUID()
-  @IsNotEmpty()
+  @IsString()
+  @IsOptional()
   provinceId: string;
 }

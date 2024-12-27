@@ -1,8 +1,10 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
+
 import {
   District,
   News,
+  PaymentPackage,
   Post,
   PostImage,
   Province,
@@ -20,6 +22,7 @@ import {
       PostImage,
       News,
       Report,
+      PaymentPackage,
     ]),
   ],
   exports: [TypeOrmModule],

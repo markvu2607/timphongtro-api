@@ -1,4 +1,5 @@
 import { DistrictResponseDto } from 'src/api/districts/dtos/responses/district.response.dto';
+import { PaymentPackageResponseDto } from 'src/api/payment-packages/dtos/responses/payment-package.response.dto';
 import { ProvinceResponseDto } from 'src/api/provinces/dtos/responses/province.response.dto';
 import { UserResponseDto } from 'src/api/users/dtos/responses/user.response.dto';
 import { Post } from 'src/repositories/entities';
@@ -19,6 +20,7 @@ export class PostResponseDto {
   public status: string;
   public district: DistrictResponseDto;
   public province: ProvinceResponseDto;
+  public paymentPackage: PaymentPackageResponseDto;
   public user: UserResponseDto;
   public postImages: PostImageResponseDto[];
 
@@ -37,6 +39,7 @@ export class PostResponseDto {
     this.status = post.status;
     this.district = new DistrictResponseDto(post.district);
     this.province = new ProvinceResponseDto(post.province);
+    this.paymentPackage = new PaymentPackageResponseDto(post.paymentPackage);
     this.user = new UserResponseDto(post.user);
     this.postImages = post.postImages.map(
       (postImage) => new PostImageResponseDto(postImage),

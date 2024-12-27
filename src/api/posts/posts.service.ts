@@ -4,8 +4,8 @@ import {
   Injectable,
   NotFoundException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import { InjectRepository } from '@nestjs/typeorm';
+import Stripe from 'stripe';
 import { Repository } from 'typeorm';
 
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
@@ -13,6 +13,7 @@ import { EPostStatus } from 'src/common/enums/post-status.enum';
 import { S3Service } from 'src/lib/s3/s3.service';
 import {
   District,
+  PaymentPackage,
   Post,
   PostImage,
   Province,
@@ -21,6 +22,7 @@ import {
 import { CreatePostRequestDto } from './dtos/requests/create-post.request.dto';
 import { GetPostsQueryParamsRequestDto } from './dtos/requests/get-posts-query-params.request.dto';
 import { UpdatePostRequestDto } from './dtos/requests/update-post.request.dto';
+import { StripeService } from 'src/lib/stripe/stripe.service';
 
 @Injectable()
 export class PostsService {
@@ -35,8 +37,10 @@ export class PostsService {
     private readonly districtsRepository: Repository<District>,
     @InjectRepository(Province)
     private readonly provincesRepository: Repository<Province>,
+    @InjectRepository(PaymentPackage)
+    private readonly paymentPackageRepository: Repository<PaymentPackage>,
     private readonly s3Service: S3Service,
-    private readonly configService: ConfigService,
+    private readonly stripeService: StripeService,
   ) {}
 
   async getPosts(
@@ -55,6 +59,7 @@ export class PostsService {
       .leftJoinAndSelect('post.user', 'user')
       .leftJoinAndSelect('post.district', 'district')
       .leftJoinAndSelect('post.province', 'province')
+      .leftJoinAndSelect('post.paymentPackage', 'paymentPackage')
       .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy(`post.${sortBy}`, sortOrder)
       .skip(skip)
@@ -125,6 +130,7 @@ export class PostsService {
 
     queryBuilder
       .leftJoinAndSelect('post.user', 'user')
+      .leftJoinAndSelect('post.paymentPackage', 'paymentPackage')
       .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy(`post.${sortBy}`, sortOrder)
       .skip(skip)
@@ -167,6 +173,7 @@ export class PostsService {
     queryBuilder
       .leftJoinAndSelect('post.district', 'district')
       .leftJoinAndSelect('post.province', 'province')
+      .leftJoinAndSelect('post.paymentPackage', 'paymentPackage')
       .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy(`post.${sortBy}`, sortOrder)
       .skip(skip)
@@ -207,7 +214,13 @@ export class PostsService {
   async getPostById(id: string): Promise<Post> {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['user', 'district', 'province', 'postImages'],
+      relations: [
+        'user',
+        'district',
+        'province',
+        'paymentPackage',
+        'postImages',
+      ],
     });
 
     if (!post) {
@@ -220,7 +233,13 @@ export class PostsService {
   async getPostByIdAndOwnerId(ownerId: string, id: string): Promise<Post> {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['user', 'district', 'province', 'postImages'],
+      relations: [
+        'user',
+        'district',
+        'province',
+        'paymentPackage',
+        'postImages',
+      ],
     });
 
     if (!post) {
@@ -237,7 +256,13 @@ export class PostsService {
   async getPublishedPostById(id: string): Promise<Post> {
     const post = await this.postsRepository.findOne({
       where: { id },
-      relations: ['user', 'district', 'province', 'postImages'],
+      relations: [
+        'user',
+        'district',
+        'province',
+        'paymentPackage',
+        'postImages',
+      ],
     });
     if (!post) {
       throw new NotFoundException('Post not found');
@@ -253,7 +278,8 @@ export class PostsService {
     createPostRequestDto: CreatePostRequestDto,
     postImages: Express.Multer.File[],
   ): Promise<Post> {
-    const { districtId, provinceId, ...postData } = createPostRequestDto;
+    const { districtId, provinceId, paymentPackageId, ...postData } =
+      createPostRequestDto;
 
     if (!postImages || postImages.length === 0) {
       throw new BadRequestException('No images provided');
@@ -280,6 +306,13 @@ export class PostsService {
       throw new NotFoundException('Province not found');
     }
 
+    const paymentPackage = await this.paymentPackageRepository.findOne({
+      where: { id: paymentPackageId },
+    });
+    if (!paymentPackage) {
+      throw new NotFoundException('Payment package not found');
+    }
+
     const uploadedFiles = await Promise.all(
       postImages.map(async (image) => {
         const key = await this.s3Service.uploadFile(
@@ -302,6 +335,7 @@ export class PostsService {
       ...postData,
       district,
       province,
+      paymentPackage,
       user,
       thumbnail: uploadedFiles[0].url,
       postImages: uploadedFiles,
@@ -315,8 +349,13 @@ export class PostsService {
     updatePostRequestDto: UpdatePostRequestDto,
     newPostImages: Express.Multer.File[],
   ): Promise<Post> {
-    const { districtId, provinceId, existingPostImages, ...postData } =
-      updatePostRequestDto;
+    const {
+      districtId,
+      provinceId,
+      paymentPackageId,
+      existingPostImages,
+      ...postData
+    } = updatePostRequestDto;
 
     const post = await this.getPostById(id);
     if (!post) {
@@ -339,6 +378,13 @@ export class PostsService {
     });
     if (!province) {
       throw new NotFoundException('Province not found');
+    }
+
+    const paymentPackage = await this.paymentPackageRepository.findOne({
+      where: { id: paymentPackageId },
+    });
+    if (!paymentPackage) {
+      throw new NotFoundException('Payment package not found');
     }
 
     const postImages = await this.postImagesRepository.find({
@@ -380,9 +426,11 @@ export class PostsService {
     );
 
     const updatedPost = {
+      ...post,
       ...postData,
       district,
       province,
+      paymentPackage,
       status: EPostStatus.REVIEWING,
       postImages: [
         ...existingPostImages.map((imageId) => ({ id: imageId })),
@@ -428,7 +476,10 @@ export class PostsService {
     }
   }
 
-  async publishPost(userId: string, id: string) {
+  async publishPost(
+    userId: string,
+    id: string,
+  ): Promise<Post | Stripe.Checkout.Session> {
     const post = await this.getPostById(id);
     if (!post) {
       throw new NotFoundException('Post not found');
@@ -446,9 +497,27 @@ export class PostsService {
       throw new BadRequestException('Post status is not approved');
     }
 
-    post.publishedAt = new Date();
-    post.status = EPostStatus.PUBLISHED;
-    return await this.postsRepository.save(post);
+    if (post.paymentPackage.price === 0) {
+      post.publishedAt = new Date();
+      post.status = EPostStatus.PUBLISHED;
+      return await this.postsRepository.save(post);
+    } else {
+      const lineItems: Stripe.Checkout.SessionCreateParams.LineItem[] = [
+        {
+          price_data: {
+            currency: post.paymentPackage.currency,
+            product_data: {
+              name: post.paymentPackage.name,
+            },
+            unit_amount: post.paymentPackage.price,
+          },
+          quantity: 1,
+        },
+      ];
+      return await this.stripeService.createCheckoutSession(lineItems, {
+        postId: post.id,
+      });
+    }
   }
 
   async closePost(userId: string, id: string) {
@@ -525,5 +594,20 @@ export class PostsService {
       .map((result) => result.value);
 
     return availablePosts;
+  }
+
+  async forcePublishPost(id: string) {
+    const post = await this.getPostById(id);
+    if (!post) {
+      throw new NotFoundException('Post not found');
+    }
+
+    if (post.status === EPostStatus.PUBLISHED) {
+      throw new BadRequestException('Post is already published');
+    }
+
+    post.publishedAt = new Date();
+    post.status = EPostStatus.PUBLISHED;
+    return await this.postsRepository.save(post);
   }
 }

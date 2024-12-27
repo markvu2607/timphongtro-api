@@ -8,7 +8,16 @@ async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
 
-  app.use(bodyParser.json({ limit: '50mb' }));
+  app.use(
+    bodyParser.json({
+      limit: '50mb',
+      verify: (req, res, buf) => {
+        if (req.url.startsWith('/api/webhooks/stripe')) {
+          req.rawBody = buf;
+        }
+      },
+    }),
+  );
   app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
 
   app.setGlobalPrefix('api');

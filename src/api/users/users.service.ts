@@ -136,6 +136,12 @@ export class UsersService {
       avatar.originalname,
       avatar.buffer,
     );
+
+    const oldAvatarKey = user.avatar.split('/').pop();
+    if (oldAvatarKey) {
+      await this.s3Service.deleteFile(oldAvatarKey);
+    }
+
     const url = `https://${process.env.AWS_S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
 
     user.avatar = url;

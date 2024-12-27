@@ -6,8 +6,8 @@ import {
   HttpCode,
   HttpStatus,
   Param,
+  Patch,
   Post,
-  Put,
   Query,
   UploadedFiles,
   UseInterceptors,
@@ -28,6 +28,34 @@ export class NewsController {
   constructor(private readonly newsService: NewsService) {}
 
   @Public()
+  @Get('published')
+  @HttpCode(HttpStatus.OK)
+  async getPublishedNews(
+    @Query() query: PaginationRequestDto,
+  ): Promise<PaginatedNewsResponseDto> {
+    const { news, total, page, limit } =
+      await this.newsService.findAllPublished(query);
+
+    return new PaginatedNewsResponseDto({
+      items: news.map((news) => new NewsResponseDto(news)),
+      total,
+      page,
+      limit,
+    });
+  }
+
+  @Public()
+  @Get('published/:id')
+  @HttpCode(HttpStatus.OK)
+  async getPublishedNewsById(
+    @Param('id') id: string,
+  ): Promise<NewsResponseDto> {
+    const news = await this.newsService.findPublishedPostById(id);
+
+    return new NewsResponseDto(news);
+  }
+
+  @Roles(ERole.ADMIN)
   @Get()
   @HttpCode(HttpStatus.OK)
   async findAll(
@@ -43,7 +71,7 @@ export class NewsController {
     });
   }
 
-  @Public()
+  @Roles(ERole.ADMIN)
   @Get(':id')
   @HttpCode(HttpStatus.OK)
   async findOneById(@Param('id') id: string): Promise<NewsResponseDto> {
@@ -64,19 +92,36 @@ export class NewsController {
   }
 
   @Roles(ERole.ADMIN)
-  @Put(':id')
+  @Patch(':id')
+  @HttpCode(HttpStatus.OK)
+  @UseInterceptors(FilesInterceptor('thumbnail', 1))
   async update(
     @Param('id') id: string,
     @Body() news: UpdateNewsRequestDto,
+    @UploadedFiles() thumbnail: Express.Multer.File[],
   ): Promise<NewsResponseDto> {
-    const updatedNews = await this.newsService.update(id, news);
+    const updatedNews = await this.newsService.update(id, news, thumbnail);
     return new NewsResponseDto(updatedNews);
   }
 
   @Roles(ERole.ADMIN)
   @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
+  @HttpCode(HttpStatus.OK)
   async delete(@Param('id') id: string) {
     return await this.newsService.delete(id);
+  }
+
+  @Roles(ERole.ADMIN)
+  @Post(':id/publish')
+  @HttpCode(HttpStatus.OK)
+  async publish(@Param('id') id: string) {
+    return await this.newsService.publish(id);
+  }
+
+  @Roles(ERole.ADMIN)
+  @Post(':id/unpublish')
+  @HttpCode(HttpStatus.OK)
+  async unpublish(@Param('id') id: string) {
+    return await this.newsService.unpublish(id);
   }
 }

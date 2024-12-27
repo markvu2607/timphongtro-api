@@ -8,6 +8,7 @@ import {
   UpdateDateColumn,
 } from 'typeorm';
 import { Province } from '.';
+import { ENewStatus } from 'src/common/enums/news-status.enum';
 
 @Entity('news')
 export class News {
@@ -26,9 +27,15 @@ export class News {
   @Column({ type: 'text' })
   content: string;
 
-  @ManyToOne(() => Province, (province) => province.id)
+  @Column({ type: 'enum', enum: ENewStatus, default: ENewStatus.DRAFT })
+  status: string;
+
+  @Column({ type: 'timestamp', default: null, nullable: true })
+  publishedAt: Date;
+
+  @ManyToOne(() => Province, (province) => province.id, { nullable: true })
   @JoinColumn({ name: 'province_id' })
-  province: Province;
+  province?: Province;
 
   @CreateDateColumn()
   createdAt: Date;

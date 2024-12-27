@@ -20,6 +20,9 @@ export class CreatePostRequestDto {
   districtId: string;
 
   @IsNotEmpty()
+  paymentPackageId: string;
+
+  @IsNotEmpty()
   provinceId: string;
 
   @IsNotEmpty()

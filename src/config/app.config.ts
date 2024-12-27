@@ -39,6 +39,10 @@ type AppConfig = {
       bucketName: string;
     };
   };
+  stripe: {
+    secretKey: string;
+    webhookSecret: string;
+  };
 };
 
 export default (): AppConfig => ({
@@ -78,5 +82,9 @@ export default (): AppConfig => ({
     s3: {
       bucketName: process.env.AWS_S3_BUCKET_NAME,
     },
+  },
+  stripe: {
+    secretKey: process.env.STRIPE_SECRET_KEY,
+    webhookSecret: process.env.STRIPE_WEBHOOK_SECRET,
   },
 });
