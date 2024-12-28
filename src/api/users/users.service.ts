@@ -9,12 +9,12 @@ import { Like, Repository } from 'typeorm';
 
 import { PgErrorCode } from 'src/common/constants';
 import { PaginationRequestDto } from 'src/common/dtos/requests/pagination.request.dto';
-import { ERole } from 'src/common/enums/role.enum';
 import { S3Service } from 'src/lib/s3/s3.service';
 import { User } from 'src/repositories/entities';
 import { HashingService } from '../auth/hashing/hashing.service';
 import { CreateUserRequestDto } from './dtos/requests/create-user.request.dto';
 import { UpdateUserRequestDto } from './dtos/requests/update-user.request.dto';
+import { ERole } from 'src/common/enums/role.enum';
 
 @Injectable()
 export class UsersService {
@@ -47,6 +47,8 @@ export class UsersService {
 
     const queryBuilder = this.usersRepository.createQueryBuilder('user');
 
+    queryBuilder.where('user.role = :role', { role: ERole.USER });
+
     if (search) {
       queryBuilder.where([
         { name: Like(`%${search}%`) },
@@ -62,9 +64,7 @@ export class UsersService {
     return { users, total, page, limit };
   }
 
-  async createAdminUser(
-    createUserRequestDto: CreateUserRequestDto,
-  ): Promise<User> {
+  async createUser(createUserRequestDto: CreateUserRequestDto): Promise<User> {
     try {
       const hashedPassword = await this.hashingService.hash(
         createUserRequestDto.password,
@@ -76,7 +76,6 @@ export class UsersService {
         name: createUserRequestDto.name,
         phone: createUserRequestDto.phone,
         isVerified: true,
-        role: ERole.ADMIN,
       });
 
       return await this.usersRepository.save(user);

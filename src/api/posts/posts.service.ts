@@ -52,7 +52,10 @@ export class PostsService {
     const queryBuilder = this.postsRepository.createQueryBuilder('post');
 
     if (search) {
-      queryBuilder.where('post.title LIKE :search', { search: `%${search}%` });
+      queryBuilder.where(
+        '(CAST(post.id AS TEXT) LIKE :search OR post.title LIKE :search)',
+        { search: `%${search}%` },
+      );
     }
 
     queryBuilder

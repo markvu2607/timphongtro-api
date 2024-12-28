@@ -80,9 +80,12 @@ export class NewsService {
     const queryBuilder = this.newsRepository.createQueryBuilder('news');
 
     if (search) {
-      queryBuilder.where('news.title LIKE :search', {
-        search: `%${search}%`,
-      });
+      queryBuilder.where(
+        '(CAST(news.id AS TEXT) LIKE :search OR news.title LIKE :search)',
+        {
+          search: `%${search}%`,
+        },
+      );
     }
 
     queryBuilder

@@ -90,11 +90,11 @@ export class UsersController {
   @Roles(ERole.ADMIN)
   @Post()
   @HttpCode(HttpStatus.CREATED)
-  async createAdminUser(
+  async createUser(
     @Body() createUserRequestDto: CreateUserRequestDto,
   ): Promise<UserResponseDto> {
     const createdUser =
-      await this.usersService.createAdminUser(createUserRequestDto);
+      await this.usersService.createUser(createUserRequestDto);
     return new UserResponseDto(createdUser);
   }
 

@@ -27,7 +27,10 @@ export class ReportService {
     const queryBuilder = this.reportRepository.createQueryBuilder('report');
 
     if (search) {
-      queryBuilder.where({ reason: Like(`%${search}%`) });
+      queryBuilder.where([
+        { reason: Like(`%${search}%`) },
+        { description: Like(`%${search}%`) },
+      ]);
     }
 
     queryBuilder
