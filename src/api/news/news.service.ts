@@ -251,4 +251,13 @@ export class NewsService {
       throw new InternalServerErrorException('Failed to publish news');
     }
   }
+
+  async getRecentPublishedNewsList(): Promise<News[]> {
+    return this.newsRepository.find({
+      where: { status: ENewStatus.PUBLISHED },
+      relations: ['province'],
+      order: { publishedAt: 'DESC' },
+      take: 5,
+    });
+  }
 }

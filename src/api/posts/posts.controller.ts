@@ -58,6 +58,14 @@ export class PostsController {
   }
 
   @Public()
+  @Get('published/premium')
+  @HttpCode(HttpStatus.OK)
+  async getPublishedPremiumPosts(): Promise<PostResponseDto[]> {
+    const posts = await this.postsService.getPublishedPremiumPosts();
+    return posts.map((post) => new PostResponseDto(post));
+  }
+
+  @Public()
   @Get('published/:id')
   @HttpCode(HttpStatus.OK)
   async getPublishedPostById(@Param('id') id: string) {

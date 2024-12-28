@@ -610,4 +610,15 @@ export class PostsService {
     post.status = EPostStatus.PUBLISHED;
     return await this.postsRepository.save(post);
   }
+
+  async getPublishedPremiumPosts(): Promise<Post[]> {
+    const queryBuilder = this.postsRepository.createQueryBuilder('post');
+    queryBuilder
+      .where('post.status = :status', { status: EPostStatus.PUBLISHED })
+      .leftJoinAndSelect('post.paymentPackage', 'paymentPackage')
+      .where('paymentPackage.price > 0')
+      .leftJoinAndSelect('post.postImages', 'postImages');
+
+    return await queryBuilder.getMany();
+  }
 }

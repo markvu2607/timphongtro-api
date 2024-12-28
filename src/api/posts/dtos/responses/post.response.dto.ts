@@ -18,11 +18,11 @@ export class PostResponseDto {
   public longitude: number;
   public latitude: number;
   public status: string;
-  public district: DistrictResponseDto;
-  public province: ProvinceResponseDto;
-  public paymentPackage: PaymentPackageResponseDto;
-  public user: UserResponseDto;
-  public postImages: PostImageResponseDto[];
+  public district?: DistrictResponseDto;
+  public province?: ProvinceResponseDto;
+  public paymentPackage?: PaymentPackageResponseDto;
+  public user?: UserResponseDto;
+  public postImages?: PostImageResponseDto[];
 
   constructor(post: Post) {
     this.id = post.id;
@@ -37,12 +37,22 @@ export class PostResponseDto {
     this.longitude = post.longitude;
     this.latitude = post.latitude;
     this.status = post.status;
-    this.district = new DistrictResponseDto(post.district);
-    this.province = new ProvinceResponseDto(post.province);
-    this.paymentPackage = new PaymentPackageResponseDto(post.paymentPackage);
-    this.user = new UserResponseDto(post.user);
-    this.postImages = post.postImages.map(
-      (postImage) => new PostImageResponseDto(postImage),
-    );
+    if (post.district) {
+      this.district = new DistrictResponseDto(post.district);
+    }
+    if (post.province) {
+      this.province = new ProvinceResponseDto(post.province);
+    }
+    if (post.paymentPackage) {
+      this.paymentPackage = new PaymentPackageResponseDto(post.paymentPackage);
+    }
+    if (post.user) {
+      this.user = new UserResponseDto(post.user);
+    }
+    if (post.postImages) {
+      this.postImages = post.postImages.map(
+        (postImage) => new PostImageResponseDto(postImage),
+      );
+    }
   }
 }

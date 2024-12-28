@@ -1,3 +1,4 @@
+import { PostResponseDto } from 'src/api/posts/dtos/responses/post.response.dto';
 import { EReportStatus } from 'src/common/enums/report-status.enum';
 import { Report } from 'src/repositories/entities';
 
@@ -8,7 +9,7 @@ export class ReportResponseDto {
   public status: EReportStatus;
   public name: string;
   public phone: string;
-  public postId: string;
+  public post?: PostResponseDto;
 
   constructor(report: Report) {
     this.id = report.id;
@@ -17,6 +18,8 @@ export class ReportResponseDto {
     this.status = report.status;
     this.name = report.name;
     this.phone = report.phone;
-    this.postId = report.post.id;
+    if (report.post) {
+      this.post = new PostResponseDto(report.post);
+    }
   }
 }

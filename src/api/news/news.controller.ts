@@ -45,6 +45,14 @@ export class NewsController {
   }
 
   @Public()
+  @Get('/published/recent')
+  @HttpCode(HttpStatus.OK)
+  async getRecentPublishedNews(): Promise<NewsResponseDto[]> {
+    const news = await this.newsService.getRecentPublishedNewsList();
+    return news.map((news) => new NewsResponseDto(news));
+  }
+
+  @Public()
   @Get('published/:id')
   @HttpCode(HttpStatus.OK)
   async getPublishedNewsById(

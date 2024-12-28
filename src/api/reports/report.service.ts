@@ -78,14 +78,39 @@ export class ReportService {
   }
 
   async delete(id: string): Promise<void> {
+    const report = await this.reportRepository.findOneBy({ id });
+
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
     await this.reportRepository.delete(id);
   }
 
   async resolve(id: string): Promise<void> {
+    const report = await this.reportRepository.findOneBy({ id });
+
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    if (report.status !== EReportStatus.PENDING) {
+      throw new Error('Report is not pending');
+    }
+
     await this.reportRepository.update(id, { status: EReportStatus.RESOLVED });
   }
 
   async reject(id: string): Promise<void> {
+    const report = await this.reportRepository.findOneBy({ id });
+
+    if (!report) {
+      throw new NotFoundException('Report not found');
+    }
+
+    if (report.status !== EReportStatus.PENDING) {
+      throw new Error('Report is not pending');
+    }
+
     await this.reportRepository.update(id, { status: EReportStatus.REJECTED });
   }
 }
