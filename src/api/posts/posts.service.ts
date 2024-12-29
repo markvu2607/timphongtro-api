@@ -620,7 +620,8 @@ export class PostsService {
       .where('post.status = :status', { status: EPostStatus.PUBLISHED })
       .leftJoinAndSelect('post.paymentPackage', 'paymentPackage')
       .where('paymentPackage.price > 0')
-      .leftJoinAndSelect('post.postImages', 'postImages');
+      .leftJoinAndSelect('post.postImages', 'postImages')
+      .orderBy('post.publishedAt', 'DESC');
 
     return await queryBuilder.getMany();
   }
