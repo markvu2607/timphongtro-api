@@ -623,10 +623,6 @@ export class PostsService {
       .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy('post.publishedAt', 'DESC');
 
-    const ans = await queryBuilder.getMany();
-    console.log(ans.map((post) => post.status));
-    // [ 'CLOSED', 'PUBLISHED', 'PUBLISHED' ]
-
     return await queryBuilder.getMany();
   }
 }

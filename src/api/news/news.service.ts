@@ -143,7 +143,6 @@ export class NewsService {
       thumbnail: thumbnailUrl,
     });
 
-    console.log(news);
     return this.newsRepository.save(news);
   }
 
