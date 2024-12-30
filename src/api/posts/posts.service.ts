@@ -619,9 +619,13 @@ export class PostsService {
     queryBuilder
       .where('post.status = :status', { status: EPostStatus.PUBLISHED })
       .leftJoinAndSelect('post.paymentPackage', 'paymentPackage')
-      .where('paymentPackage.price > 0')
+      .andWhere('paymentPackage.price > 0')
       .leftJoinAndSelect('post.postImages', 'postImages')
       .orderBy('post.publishedAt', 'DESC');
+
+    const ans = await queryBuilder.getMany();
+    console.log(ans.map((post) => post.status));
+    // [ 'CLOSED', 'PUBLISHED', 'PUBLISHED' ]
 
     return await queryBuilder.getMany();
   }
