@@ -37,13 +37,33 @@ export class AnalyticsService {
         .getRawMany();
 
       const chart1 = rs1.map((r) => ({
-        date: r.date,
+        date: r.date.toISOString().split('T')[0],
         income: r.income,
       }));
       const chart3 = rs1.map((r) => ({
-        date: r.date,
+        date: r.date.toISOString().split('T')[0],
         postCount: r.count,
       }));
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const existing = chart1.find((item) => item.date === dateStr);
+
+        if (!existing) {
+          chart1.push({ date: dateStr, income: 0 });
+          chart3.push({ date: dateStr, postCount: 0 });
+        }
+      }
+
+      chart1.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
+      chart3.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
 
       const rs2 = await this.postRepository
         .createQueryBuilder('post')
@@ -91,13 +111,33 @@ export class AnalyticsService {
         .getRawMany();
 
       const chart1 = rs1.map((r) => ({
-        date: r.date,
+        date: r.date.toISOString().split('T')[0],
         income: r.income,
       }));
       const chart3 = rs1.map((r) => ({
-        date: r.date,
+        date: r.date.toISOString().split('T')[0],
         postCount: r.count,
       }));
+
+      const start = new Date(startDate);
+      const end = new Date(endDate);
+
+      for (let d = start; d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split('T')[0];
+        const existing = chart1.find((item) => item.date === dateStr);
+
+        if (!existing) {
+          chart1.push({ date: dateStr, income: 0 });
+          chart3.push({ date: dateStr, postCount: 0 });
+        }
+      }
+
+      chart1.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
+      chart3.sort(
+        (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime(),
+      );
 
       const rs2 = await this.postRepository
         .createQueryBuilder('post')
