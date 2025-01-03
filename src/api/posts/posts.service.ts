@@ -541,7 +541,6 @@ export class PostsService {
       throw new BadRequestException('Post is not published yet');
     }
 
-    post.publishedAt = null;
     post.status = EPostStatus.CLOSED;
     return await this.postsRepository.save(post);
   }

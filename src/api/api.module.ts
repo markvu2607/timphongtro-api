@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 
+import { AnalyticsModule } from './analytics/analytics.module';
 import { AuthModule } from './auth/auth.module';
 import { DistrictsModule } from './districts/districts.module';
 import { NewsModule } from './news/news.module';
@@ -19,6 +20,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
     ReportModule,
     NewsModule,
     WebhooksModule,
+    AnalyticsModule,
   ],
 })
 export class ApiModule {}
